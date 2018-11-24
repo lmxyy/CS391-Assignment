@@ -3,6 +3,6 @@
 *.ipr
 *.iws
 out
-*/ltprotocol/
-*/pox/
+assignment3/ltprotocol/
+assignment3/pox/
 .DS_Store
