@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>记分牌</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <!-- <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script> -->
+    <!-- <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script> -->
+    <link href="pricing.css" rel="stylesheet">
+  </head>
+  <body>
+
+    <div class="page-header">
+      <h1 class="text-center" style="font-size:60px"}>记分牌</h1>
+    </div>
+
+    <div class="container">
+      <hr/>
+      <div class="card-deck mb-2 text-center">
+	
+        <div class="card mb-4 box-shadow">
+          <div class="card-header">
+            <h4 class="my-0 font-weight-normal">A</h4>
+          </div>
+          <div class="card-body">
+            <h1 class="card-title pricing-card-title" style="font-size:80px" id="score1">0</h1>
+	    <button type="button" class="btn btn-success btn-lg btn-block" onclick="add('score1',10)">加10分</button>
+	    <button type="button" class="btn btn-danger btn-lg btn-block" onclick="add('score1',-10)">扣10分</button>
+          </div>
+        </div>
+
+	<div class="card mb-4 box-shadow">
+          <div class="card-header">
+            <h4 class="my-0 font-weight-normal">B</h4>
+          </div>
+          <div class="card-body">
+            <h1 class="card-title pricing-card-title" style="font-size:80px" id="score2">0</h1>
+            <button type="button" class="btn btn-success btn-lg btn-block" onclick="add('score2',10)">加10分</button>
+	    <button type="button" class="btn btn-danger btn-lg btn-block" onclick="add('score2',-10)">扣10分</button>
+          </div>
+        </div>
+	
+      </div>
+      <hr/>
+    </div>
+
+    <script src="adder.js"> 
+    </script>
+    
+    <div class="w-1000 copyright text-center">
+     Copyright &copy; 2018-2018    <strong>Lmxyy</strong> All Rights Reserved. 备案号：无
+   </div>
+  </body>
+</html>

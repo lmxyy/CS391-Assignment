@@ -1,0 +1,5 @@
+Client mode.
+sent=71554 KB   rate=30.685 Mbps
+Server mode.
+received=71554 KB       rate=23.899 Mbps
+

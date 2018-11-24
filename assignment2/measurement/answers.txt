@@ -1,0 +1,41 @@
+Q2 Prediction: 
+Latency: 80 ms	Throughput: 20 Mbps
+
+Q2 Measurements:
+Average RTT=162.055 ms	Throughput: 18.632 Mbps
+
+My predictions are quite close to the actual results. The latency is sum of the latency of L1, L2 and L3 and the RTT is twice the latency. The throughput the is minimum throughput among L1, L2 and L3.
+
+================================================================================================================================================================
+
+Q3 Prediction:
+2 pairs:
+Latency: 80 ms	Throughput: 10 Mbps
+3 pairs:
+Latency: 80 ms	Throughput: 6.67 Mbps
+TODO EXPLAIN
+
+Q3 Measurements:
+2 pairs:
+Average RTT=161.584/162.081 ms	Throughput: 10.415/8.775 Mbps
+3 pairs:
+Average RTT=163.991/165.339/163.021 ms	Throughput: 9.621/5.452/4.261 Mbps
+
+My predictions are quite close to the actual value. The latency is still the same as for one pair of hosts, since multiple simultaneous communicating does not affect the latency. Since the 2/3 pairs have to share the link L1, L2 and L3, and L1 is the bottleneck of these links, so the throughput must be the throughput of 20/2 or 20/3.
+
+================================================================================================================================================================
+
+
+Q4 Prediction:
+h1->h4:
+Latency: 80 ms	Throughput: 20 Mbps
+h5->h6:
+Latency: 20 ms	Throughput: 20 Mbps
+
+Q4 Measurements:
+h1->h4:
+Latency: 164.552 ms	Throughput: 16.020 Mbps
+h5->h6:
+Latency: 43.607 ms	Throughput: 21.120 Mbps
+
+My predictions are quite close to the actual value. The latency is still the same as for one pair of hosts. Since h1-h4 and h5-h6 communication have to share the link L2, L2 will distributes half of its resources to h1-h4 and half to h5-h6. Thus L2 is the bottleneck of both communications.
