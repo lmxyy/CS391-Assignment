@@ -51,7 +51,6 @@ public class Switch extends Device {
                 etherPacket.toString().replace("\n", "\n\t"));
 
         /********************************************************************/
-        /* TODO: Handle packets, necessary to modify the vlan?              */
         MACAddress sourceMAC = etherPacket.getSourceMAC();
         MACAddress destinationMAC = etherPacket.getDestinationMAC();
         long currentTime = System.currentTimeMillis();
