@@ -71,10 +71,10 @@ public class Switch extends Device {
             }
         }
         if (!found) {
-            this.getInterfaces().values().forEach(iface -> {
+            for (Iface iface : this.getInterfaces().values()) {
                 if (iface != inIface)
                     this.sendPacket(etherPacket, iface);
-            });
+            }
         }
         /********************************************************************/
     }
