@@ -2,7 +2,6 @@
 *.iml
 *.ipr
 *.iws
-out
-assignment3/ltprotocol/
-assignment3/pox/
+ltprotocol/
+pox/
 .DS_Store
