@@ -1,19 +1,19 @@
 /**
-*    Copyright 2011, Big Switch Networks, Inc. 
-*    Originally created by David Erickson, Stanford University
-* 
-*    Licensed under the Apache License, Version 2.0 (the "License"); you may
-*    not use this file except in compliance with the License. You may obtain
-*    a copy of the License at
-*
-*         http://www.apache.org/licenses/LICENSE-2.0
-*
-*    Unless required by applicable law or agreed to in writing, software
-*    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-*    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-*    License for the specific language governing permissions and limitations
-*    under the License.
-**/
+ * Copyright 2011, Big Switch Networks, Inc.
+ * Originally created by David Erickson, Stanford University
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ **/
 
 package net.floodlightcontroller.packet;
 
@@ -22,14 +22,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * @author David Erickson (daviderickson@cs.stanford.edu)
  */
 public class UDP extends BasePacket {
     public static Map<Short, Class<? extends IPacket>> decodeMap;
-    public static short DHCP_SERVER_PORT = (short)67;
-    public static short DHCP_CLIENT_PORT = (short)68;
-    public static short RIP_PORT = (short)520;
+    public static short DHCP_SERVER_PORT = (short) 67;
+    public static short DHCP_CLIENT_PORT = (short) 68;
+    public static short RIP_PORT = (short) 520;
 
     static {
         decodeMap = new HashMap<Short, Class<? extends IPacket>>();
@@ -102,8 +101,8 @@ public class UDP extends BasePacket {
     /**
      * Serializes the packet. Will compute and set the following fields if they
      * are set to specific values at the time serialize is called:
-     *      -checksum : 0
-     *      -length : 0
+     * -checksum : 0
+     * -length : 0
      */
     public byte[] serialize() {
         byte[] payloadData = null;
@@ -126,7 +125,7 @@ public class UDP extends BasePacket {
             bb.put(payloadData);
 
         if (this.parent != null && this.parent instanceof IPv4)
-            ((IPv4)this.parent).setProtocol(IPv4.PROTOCOL_UDP);
+            ((IPv4) this.parent).setProtocol(IPv4.PROTOCOL_UDP);
 
         // compute checksum if needed
         if (this.checksum == 0) {
@@ -220,7 +219,7 @@ public class UDP extends BasePacket {
         } else {
             this.payload = new Data();
         }
-        this.payload = payload.deserialize(data, bb.position(), bb.limit()-bb.position());
+        this.payload = payload.deserialize(data, bb.position(), bb.limit() - bb.position());
         this.payload.setParent(this);
         return this;
     }
