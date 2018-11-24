@@ -279,6 +279,49 @@ public class IPv4 extends BasePacket {
         return this;
     }
 
+    public int calcChecksum() {
+        byte[] payloadData = null;
+        if (payload != null) {
+            payload.setParent(this);
+            payloadData = payload.serialize();
+        }
+
+        int optionsLength = 0;
+        if (this.options != null)
+            optionsLength = this.options.length / 4;
+        this.headerLength = (byte) (5 + optionsLength);
+
+        this.totalLength = (short) (this.headerLength * 4 + ((payloadData == null) ? 0
+                : payloadData.length));
+
+        byte[] data = new byte[this.totalLength];
+        ByteBuffer bb = ByteBuffer.wrap(data);
+
+        bb.put((byte) (((this.version & 0xf) << 4) | (this.headerLength & 0xf)));
+        bb.put(this.diffServ);
+        bb.putShort(this.totalLength);
+        bb.putShort(this.identification);
+        bb.putShort((short) (((this.flags & 0x7) << 13) | (this.fragmentOffset & 0x1fff)));
+        bb.put(this.ttl);
+        bb.put(this.protocol);
+        bb.putShort(this.checksum);
+        bb.putInt(this.sourceAddress);
+        bb.putInt(this.destinationAddress);
+        if (this.options != null)
+            bb.put(this.options);
+        if (payloadData != null)
+            bb.put(payloadData);
+
+        bb.rewind();
+        int accumulation = 0;
+        for (int i = 0; i < this.headerLength * 2; ++i) {
+            accumulation += 0xffff & bb.getShort();
+        }
+        accumulation = ((accumulation >> 16) & 0xffff)
+                + (accumulation & 0xffff);
+        return (~accumulation & 0xffff);
+    }
+
     /**
      * Serializes the packet. Will compute and set the following fields if they
      * are set to specific values at the time serialize is called:

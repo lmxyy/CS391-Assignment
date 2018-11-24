@@ -5,6 +5,9 @@ import edu.wisc.cs.sdn.vnet.DumpFile;
 import edu.wisc.cs.sdn.vnet.Iface;
 
 import net.floodlightcontroller.packet.Ethernet;
+import net.floodlightcontroller.packet.IPv4;
+
+import java.nio.ByteBuffer;
 
 /**
  * @author Aaron Gember-Jacobson and Anubhavnidhi Abhashkumar
@@ -86,8 +89,44 @@ public class Router extends Device {
 
         /********************************************************************/
         /* TODO: Handle packets                                             */
+//        The packet is not an IPv4 packet.
+        if (etherPacket.getEtherType() != Ethernet.TYPE_IPv4) return;
 
-
+        IPv4 packet = (IPv4) etherPacket.getPayload();
+//        Check the checksum.
+        if (packet.calcChecksum() != packet.getChecksum())
+            return;
+//        Check the TTL.
+        int ttl = packet.getTtl() & 0xff;
+        if (ttl > 1)
+            packet.setTtl((byte) (ttl - 1));
+        else return;
+//        Determine whether the packet is destined for one of the router’s interfaces.
+        int destinationAddress = packet.getDestinationAddress();
+        int cnt = 0;
+        for (Iface iface : this.interfaces.values()) {
+            if (iface == inIface)
+                continue;
+            int ipAddress = iface.getIpAddress(), subnetMask = iface.getSubnetMask();
+            boolean match = true;
+            for (int i = 31; i >= 0; --i) {
+                if ((((subnetMask) >> i) & 1) == 0)
+                    break;
+                if (((ipAddress >> i) & 1) != ((destinationAddress >> i) & 1)) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) cnt++;
+        }
+        if (cnt == 1) return;
+//        Ready for forwarding the packet.
+        RouteEntry entry = routeTable.lookup(destinationAddress);
+        if (entry == null)
+            return;
+        etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
+        etherPacket.setDestinationMACAddress(arpCache.lookup(entry.getDestinationAddress()).getMac().toString());
+        sendPacket(etherPacket, entry.getInterface());
         /********************************************************************/
     }
 }
