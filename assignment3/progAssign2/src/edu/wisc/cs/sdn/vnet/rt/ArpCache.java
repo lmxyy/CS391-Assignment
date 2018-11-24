@@ -22,7 +22,7 @@ public class ArpCache {
      * Entries in the cache; maps an IP address to an entry
      */
     private Map<Integer, ArpEntry> entries;
-	
+
     /**
      * Initializes an empty ARP cache for a router.
      */
