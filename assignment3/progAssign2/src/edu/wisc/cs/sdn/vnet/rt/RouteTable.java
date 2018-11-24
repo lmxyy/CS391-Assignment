@@ -187,13 +187,13 @@ public class RouteTable {
         }
     }
 
-    /**
-     * Remove an entry from the route table.
-     *
-     * @param dstIP  destination IP of the entry to remove
-     * @param maskIp subnet mask of the entry to remove
-     * @return true if a matching entry was found and removed, otherwise false
-     */
+//    /**
+//     * Remove an entry from the route table.
+//     *
+//     * @param dstIP  destination IP of the entry to remove
+//     * @param maskIp subnet mask of the entry to remove
+//     * @return true if a matching entry was found and removed, otherwise false
+//     */
     public boolean remove(int dstIp, int maskIp) {
         synchronized (this.entries) {
             RouteEntry entry = this.find(dstIp, maskIp);
@@ -205,15 +205,15 @@ public class RouteTable {
         return true;
     }
 
-    /**
-     * Update an entry in the route table.
-     *
-     * @param dstIP          destination IP of the entry to update
-     * @param maskIp         subnet mask of the entry to update
-     * @param gatewayAddress new gateway IP address for matching entry
-     * @param iface          new router interface for matching entry
-     * @return true if a matching entry was found and updated, otherwise false
-     */
+//    /**
+//     * Update an entry in the route table.
+//     *
+//     * @param dstIP          destination IP of the entry to update
+//     * @param maskIp         subnet mask of the entry to update
+//     * @param gatewayAddress new gateway IP address for matching entry
+//     * @param iface          new router interface for matching entry
+//     * @return true if a matching entry was found and updated, otherwise false
+//     */
     public boolean update(int dstIp, int maskIp, int gwIp,
                           Iface iface) {
         synchronized (this.entries) {
@@ -227,13 +227,13 @@ public class RouteTable {
         return true;
     }
 
-    /**
-     * Find an entry in the route table.
-     *
-     * @param dstIP  destination IP of the entry to find
-     * @param maskIp subnet mask of the entry to find
-     * @return a matching entry if one was found, otherwise null
-     */
+//    /**
+//     * Find an entry in the route table.
+//     *
+//     * @param dstIP  destination IP of the entry to find
+//     * @param maskIp subnet mask of the entry to find
+//     * @return a matching entry if one was found, otherwise null
+//     */
     private RouteEntry find(int dstIp, int maskIp) {
         synchronized (this.entries) {
             for (RouteEntry entry : this.entries) {
