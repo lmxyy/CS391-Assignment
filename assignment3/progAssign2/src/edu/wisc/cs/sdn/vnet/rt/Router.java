@@ -122,7 +122,7 @@ public class Router extends Device {
             return;
 //        Ready for forwarding the packet.
         RouteEntry entry = routeTable.lookup(destinationAddress);
-        if (entry == null)
+        if (entry == null||entry.getInterface() == inIface)
             return;
         etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
         etherPacket.setDestinationMACAddress(arpCache.lookup(destinationAddress).getMac().toBytes());
