@@ -95,6 +95,8 @@ public class Router extends Device {
         IPv4 packet = (IPv4) etherPacket.getPayload();
 //        Check the checksum.
         if (packet.calcChecksum() != packet.getChecksum()) {
+            System.err.println(packet.calcChecksum());
+            System.err.println(packet.getChecksum());
             System.err.println("checksum error.");
             return;
         }
