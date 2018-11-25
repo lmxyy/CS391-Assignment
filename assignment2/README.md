@@ -1,6 +1,8 @@
-# Compile and Execute
+# Mininet based Programming Assignments: Mininet & Performance
 
-## Compile
+## Compile and Execute
+
+### Compile
 
 The following is the step to compile the codes:
 
@@ -9,7 +11,7 @@ cd src
 bash compile.sh
 ```
 
-## Execute
+### Execute
 
 After compilation, you can run following code to execute the code:
 
@@ -22,3 +24,4 @@ For more detail about the option, you can run the following code for detail.
 ```bash
 bash run.sh --help
 ```
+

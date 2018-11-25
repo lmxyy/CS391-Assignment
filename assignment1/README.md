@@ -1,4 +1,4 @@
-# Assignment 1 of Computer Networking
+# Socket Programming Assignments
 
 [TOC]
 
