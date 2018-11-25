@@ -6,6 +6,7 @@ import edu.wisc.cs.sdn.vnet.Iface;
 
 import net.floodlightcontroller.packet.Ethernet;
 import net.floodlightcontroller.packet.IPv4;
+import org.openflow.util.HexString;
 
 import java.nio.ByteBuffer;
 
@@ -112,11 +113,9 @@ public class Router extends Device {
         int destinationAddress = packet.getDestinationAddress();
         int cnt = 0;
         for (Iface iface : this.interfaces.values()) {
-            int ipAddress = iface.getIpAddress(), subnetMask = iface.getSubnetMask();
+            int ipAddress = iface.getIpAddress();
             boolean match = true;
             for (int i = 31; i >= 0; --i) {
-//                if ((((subnetMask) >> i) & 1) == 0)
-//                    break;
                 if (((ipAddress >> i) & 1) != ((destinationAddress >> i) & 1)) {
                     match = false;
                     break;
@@ -126,6 +125,7 @@ public class Router extends Device {
         }
         if (cnt == 1) {
             System.err.print("IP is a interface.");
+            return;
         }
 //        Ready for forwarding the packet.
         RouteEntry entry = routeTable.lookup(destinationAddress);
@@ -133,6 +133,8 @@ public class Router extends Device {
             System.err.println("No feasible entry.");
             return;
         }
+        System.err.println("new source: " + HexString.toHexString(entry.getInterface().getMacAddress().toBytes()));
+        System.err.println("new dest: " + HexString.toHexString(arpCache.lookup(destinationAddress).getMac().toBytes()));
         etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
         etherPacket.setDestinationMACAddress(arpCache.lookup(destinationAddress).getMac().toBytes());
         sendPacket(etherPacket, entry.getInterface());
