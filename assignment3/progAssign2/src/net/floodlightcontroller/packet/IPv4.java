@@ -279,7 +279,7 @@ public class IPv4 extends BasePacket {
         return this;
     }
 
-    public int calcChecksum() {
+    public short calcChecksum() {
         byte[] payloadData = null;
         if (payload != null) {
             payload.setParent(this);
@@ -319,7 +319,7 @@ public class IPv4 extends BasePacket {
         }
         accumulation = ((accumulation >> 16) & 0xffff)
                 + (accumulation & 0xffff);
-        return (~accumulation & 0xffff);
+        return (short) (~accumulation & 0xffff);
     }
 
     /**
