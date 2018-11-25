@@ -136,7 +136,7 @@ public class Router extends Device {
             return;
         }
         etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
-        etherPacket.setDestinationMACAddress(arpCache.lookup(entry.getDestinationAddress()).getMac().toString());
+        etherPacket.setDestinationMACAddress(arpCache.lookup(destinationAddress).getMac().toBytes());
         sendPacket(etherPacket, entry.getInterface());
         /********************************************************************/
     }
