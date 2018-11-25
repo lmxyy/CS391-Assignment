@@ -95,20 +95,15 @@ public class Router extends Device {
 
         IPv4 packet = (IPv4) etherPacket.getPayload();
 //        Check the checksum.
-        if (packet.calcChecksum() != 0) {
-//            System.err.println(packet.calcChecksum());
-//            System.err.println(packet.getChecksum());
-            System.err.println("checksum error.");
+        if (packet.calcChecksum() != 0)
             return;
-        }
+
 //        Check the TTL.
         int ttl = packet.getTtl() & 0xff;
         if (ttl > 1)
             packet.setTtl((byte) (ttl - 1));
-        else {
-            System.err.println("ttl error.");
+        else
             return;
-        }
 //        Determine whether the packet is destined for one of the router’s interfaces.
         int destinationAddress = packet.getDestinationAddress();
         int cnt = 0;
@@ -123,26 +118,16 @@ public class Router extends Device {
             }
             if (match) cnt++;
         }
-        if (cnt == 1) {
-            System.err.print("IP is a interface.");
+        if (cnt == 1)
             return;
-        }
 //        Ready for forwarding the packet.
         RouteEntry entry = routeTable.lookup(destinationAddress);
-        if (entry == null) {
-            System.err.println("No feasible entry.");
+        if (entry == null)
             return;
-        }
-        System.err.println("new source: " + HexString.toHexString(entry.getInterface().getMacAddress().toBytes()));
-        System.err.println("new dest: " + HexString.toHexString(arpCache.lookup(destinationAddress).getMac().toBytes()));
-        System.err.println(entry.getInterface().toString());
         etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
         etherPacket.setDestinationMACAddress(arpCache.lookup(destinationAddress).getMac().toBytes());
-        System.err.println("origin checksum: " + packet.calcChecksum());
         packet.resetChecksum();
         packet.serialize();
-        System.err.println("checksum: " + packet.calcChecksum());
-//        System.err.println("checksum: ",etherPacket.)
         sendPacket(etherPacket, entry.getInterface());
         /********************************************************************/
     }
