@@ -138,6 +138,8 @@ public class Router extends Device {
         System.err.println(entry.getInterface().toString());
         etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
         etherPacket.setDestinationMACAddress(arpCache.lookup(destinationAddress).getMac().toBytes());
+        etherPacket.resetChecksum();
+        etherPacket.serialize();
         sendPacket(etherPacket, entry.getInterface());
         /********************************************************************/
     }
