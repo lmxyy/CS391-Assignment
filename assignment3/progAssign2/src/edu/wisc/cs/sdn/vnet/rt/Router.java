@@ -112,13 +112,11 @@ public class Router extends Device {
         int destinationAddress = packet.getDestinationAddress();
         int cnt = 0;
         for (Iface iface : this.interfaces.values()) {
-            if (iface == inIface)
-                continue;
             int ipAddress = iface.getIpAddress(), subnetMask = iface.getSubnetMask();
             boolean match = true;
             for (int i = 31; i >= 0; --i) {
-                if ((((subnetMask) >> i) & 1) == 0)
-                    break;
+//                if ((((subnetMask) >> i) & 1) == 0)
+//                    break;
                 if (((ipAddress >> i) & 1) != ((destinationAddress >> i) & 1)) {
                     match = false;
                     break;
