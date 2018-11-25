@@ -138,8 +138,11 @@ public class Router extends Device {
         System.err.println(entry.getInterface().toString());
         etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
         etherPacket.setDestinationMACAddress(arpCache.lookup(destinationAddress).getMac().toBytes());
-        etherPacket.resetChecksum();
-        etherPacket.serialize();
+        System.err.println("origin checksum: " + packet.calcChecksum());
+        packet.resetChecksum();
+        packet.serialize();
+        System.err.println("checksum: " + packet.calcChecksum());
+//        System.err.println("checksum: ",etherPacket.)
         sendPacket(etherPacket, entry.getInterface());
         /********************************************************************/
     }
