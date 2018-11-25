@@ -135,6 +135,7 @@ public class Router extends Device {
         }
         System.err.println("new source: " + HexString.toHexString(entry.getInterface().getMacAddress().toBytes()));
         System.err.println("new dest: " + HexString.toHexString(arpCache.lookup(destinationAddress).getMac().toBytes()));
+        System.err.println(entry.getInterface().toString());
         etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
         etherPacket.setDestinationMACAddress(arpCache.lookup(destinationAddress).getMac().toBytes());
         sendPacket(etherPacket, entry.getInterface());
