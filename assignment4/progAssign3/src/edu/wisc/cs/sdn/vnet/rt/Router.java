@@ -286,7 +286,7 @@ public class Router extends Device {
 
         ethernet.setEtherType(Ethernet.TYPE_ARP);
         ethernet.setSourceMACAddress(inIface.getMacAddress().toBytes());
-        ethernet.setDestinationMACAddress(ethernet.getSourceMACAddress());
+        ethernet.setDestinationMACAddress(etherPacket.getSourceMACAddress());
         ethernet.setPayload(arp);
 
         arp.setHardwareType(ARP.HW_TYPE_ETHERNET);
@@ -296,9 +296,9 @@ public class Router extends Device {
         arp.setOpCode(ARP.OP_REPLY);
         arp.setSenderHardwareAddress(inIface.getMacAddress().toBytes());
         arp.setSenderProtocolAddress(inIface.getIpAddress());
-//        arp.setTargetHardwareAddress(arpPacket.getSenderHardwareAddress());
-        arp.setTargetHardwareAddress(etherPacket.getSourceMACAddress());
-        arp.setTargetProtocolAddress(ByteBuffer.wrap(arpPacket.getSenderProtocolAddress()).getInt());
+        arp.setTargetHardwareAddress(arpPacket.getSenderHardwareAddress());
+//        arp.setTargetHardwareAddress(etherPacket.getSourceMACAddress());
+        arp.setTargetProtocolAddress(arpPacket.getSenderProtocolAddress());
 
         return ethernet;
     }
