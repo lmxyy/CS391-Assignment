@@ -88,7 +88,6 @@ public class Router extends Device {
                 etherPacket.toString().replace("\n", "\n\t"));
 
         /********************************************************************/
-        System.err.print(etherPacket.getEtherType()+" "+Ethernet.TYPE_IPv4);
         switch (etherPacket.getEtherType()) {
             case Ethernet.TYPE_IPv4:
                 this.handleIpPacket(etherPacket, inIface);
