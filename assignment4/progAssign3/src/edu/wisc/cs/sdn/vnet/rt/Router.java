@@ -250,8 +250,9 @@ public class Router extends Device {
         if (arpPacket.getOpCode() == ARP.OP_REQUEST) {
             System.out.println("ARP Request.");
             int targetIp = ByteBuffer.wrap(arpPacket.getTargetProtocolAddress()).getInt();
-            System.out.println(targetIp);
+            System.out.println(HexString.toHexString(targetIp));
             if (targetIp == inIface.getIpAddress()) {
+                System.out.println("Send ARP Reply.");
                 Ethernet arpMessage = getArpMessage(etherPacket, inIface);
                 this.sendPacket(arpMessage, inIface);
             }
