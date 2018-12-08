@@ -275,8 +275,12 @@ public class Router extends Device {
         arp.setHardwareAddressLength((byte) Ethernet.DATALAYER_ADDRESS_LENGTH);
         arp.setProtocolAddressLength((byte) 4);
         arp.setOpCode(ARP.OP_REPLY);
+        System.err.println(inIface.getMacAddress().toString());
+        System.err.println(inIface.getIpAddress());
         arp.setSenderHardwareAddress(inIface.getMacAddress().toBytes());
         arp.setSenderProtocolAddress(inIface.getIpAddress());
+        System.err.println(arpPacket.getSenderHardwareAddress());
+        System.err.println(arpPacket.getSenderProtocolAddress());
         arp.setTargetHardwareAddress(arpPacket.getSenderHardwareAddress());
         arp.setTargetProtocolAddress(arpPacket.getSenderProtocolAddress());
 
