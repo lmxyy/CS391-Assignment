@@ -9,6 +9,9 @@ import net.floodlightcontroller.packet.Ethernet;
 import net.floodlightcontroller.packet.ICMP;
 import net.floodlightcontroller.packet.IPv4;
 
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
 /**
  * @author Aaron Gember-Jacobson and Anubhavnidhi Abhashkumar
  */
@@ -93,7 +96,9 @@ public class Router extends Device {
                 this.handleIpPacket(etherPacket, inIface);
                 break;
             // Ignore all other packet types, for now
-            default: System.err.println("An unknown packet."); break;
+            default:
+                System.err.println("An unknown packet.");
+                break;
         }
 
         /********************************************************************/
@@ -123,28 +128,8 @@ public class Router extends Device {
         ipPacket.setTtl((byte) (ipPacket.getTtl() - 1));
         if (0 == ipPacket.getTtl()) {
 //            Time Exceeded ICMP
-            Ethernet ethernet = new Ethernet();
-            IPv4 iPv4 = new IPv4();
-            ICMP icmp = new ICMP();
-            Data data = new Data();
-
-            ethernet.setEtherType(Ethernet.TYPE_IPv4);
-            ethernet.setSourceMACAddress(inIface.getMacAddress().toBytes());
-            ethernet.setDestinationMACAddress(arpCache.lookup(ipPacket.getSourceAddress()).getMac().toBytes());
-            ethernet.setPayload(iPv4);
-
-            iPv4.setTtl((byte) 64);
-            iPv4.setProtocol(IPv4.PROTOCOL_ICMP);
-            iPv4.setSourceAddress(inIface.getIpAddress());
-            iPv4.setDestinationAddress(ipPacket.getSourceAddress());
-            iPv4.setPayload(icmp);
-
-            icmp.setIcmpType((byte) 11);
-            icmp.setIcmpCode((byte) 0);
-            icmp.setPayload(data);
-
-            System.err.println("aaaa");
-            this.sendPacket(ethernet,inIface);
+            Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 11, (byte) 0);
+            this.sendPacket(icmpMessage,inIface);
             return;
         }
 
@@ -204,5 +189,39 @@ public class Router extends Device {
         etherPacket.setDestinationMACAddress(arpEntry.getMac().toBytes());
 
         this.sendPacket(etherPacket, outIface);
+    }
+
+    private Ethernet getICMPMessage(Iface inIface, IPv4 ipPacket, byte type, byte code) {
+        Ethernet ethernet = new Ethernet();
+        IPv4 iPv4 = new IPv4();
+        ICMP icmp = new ICMP();
+        Data data = new Data();
+
+        ethernet.setEtherType(Ethernet.TYPE_IPv4);
+        ethernet.setSourceMACAddress(inIface.getMacAddress().toBytes());
+        ethernet.setDestinationMACAddress(arpCache.lookup(ipPacket.getSourceAddress()).getMac().toBytes());
+        ethernet.setPayload(iPv4);
+
+        iPv4.setTtl((byte) 64);
+        iPv4.setProtocol(IPv4.PROTOCOL_ICMP);
+        iPv4.setSourceAddress(inIface.getIpAddress());
+        iPv4.setDestinationAddress(ipPacket.getSourceAddress());
+        iPv4.setPayload(icmp);
+
+        icmp.setIcmpType(type);
+        icmp.setIcmpCode(code);
+        icmp.setPayload(data);
+
+        int length = 4 + ipPacket.getHeaderLength() * 4 + 8;
+        byte[] dataBytes = new byte[length];
+        ByteBuffer byteBuffer = ByteBuffer.wrap(dataBytes);
+        byteBuffer.putInt(0);
+        byte[] ipHeader = ipPacket.serialize();
+        byteBuffer.put(Arrays.copyOfRange(ipHeader, 0, ipPacket.getHeaderLength() * 4));
+        byteBuffer.put(Arrays.copyOfRange(ipHeader, 0, 8));
+        byteBuffer.rewind();
+        data.setData(dataBytes);
+
+        return ethernet;
     }
 }
