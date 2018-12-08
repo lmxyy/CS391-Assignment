@@ -91,11 +91,10 @@ public class Router extends Device {
         System.err.print(etherPacket.getEtherType()+" "+Ethernet.TYPE_IPv4);
         switch (etherPacket.getEtherType()) {
             case Ethernet.TYPE_IPv4:
-                System.err.println("handle ipv4 packet.");
                 this.handleIpPacket(etherPacket, inIface);
                 break;
             // Ignore all other packet types, for now
-            default: System.err.println("some other packet.");
+            default: System.err.println("An unknown packet."); break;
         }
 
         /********************************************************************/
@@ -145,7 +144,9 @@ public class Router extends Device {
             icmp.setIcmpCode((byte) 0);
             icmp.setPayload(data);
 
-            this.sendPacket(ethernet,inIface);
+            if (inIface == null)
+                System.err.println("inIface is null.");
+            this.forwardIpPacket(ethernet,inIface);
             return;
         }
 
