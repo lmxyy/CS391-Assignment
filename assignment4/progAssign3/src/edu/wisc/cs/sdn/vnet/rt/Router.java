@@ -208,6 +208,9 @@ public class Router extends Device {
 
         iPv4.setTtl((byte) 64);
         iPv4.setProtocol(IPv4.PROTOCOL_ICMP);
+        System.err.println(HexString.toHexString(inIface.getIpAddress()));
+        System.err.println(HexString.toHexString(ipPacket.getSourceAddress()));
+        System.err.println(HexString.toHexString(ipPacket.getDestinationAddress()));
         iPv4.setSourceAddress(inIface.getIpAddress());
         iPv4.setDestinationAddress(ipPacket.getSourceAddress());
         iPv4.setPayload(icmp);
