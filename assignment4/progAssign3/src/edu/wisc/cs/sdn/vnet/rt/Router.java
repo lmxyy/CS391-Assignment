@@ -143,6 +143,7 @@ public class Router extends Device {
                 return;
             }
         }
+        System.err.println("lalala");
 
         // Do route lookup and forward
         this.forwardIpPacket(etherPacket, inIface);
@@ -173,7 +174,6 @@ public class Router extends Device {
         // Make sure we don't sent a packet back out the interface it came in
         Iface outIface = bestMatch.getInterface();
 //        Destination port unreachable ICMP
-        System.err.println("lalala");
 
         if (outIface == inIface) {
             System.err.println(ipPacket.getProtocol());
