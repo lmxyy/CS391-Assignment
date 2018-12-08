@@ -127,7 +127,7 @@ public class Router extends Device {
 
         // Check TTL
         ipPacket.setTtl((byte) (ipPacket.getTtl() - 1));
-        System.err.println("TTL: "+ipPacket.getTtl());
+        System.err.println("TTL: " + ipPacket.getTtl());
         if (0 == ipPacket.getTtl()) {
 //            Time Exceeded ICMP
             System.err.println("lalalalalala");
@@ -220,8 +220,7 @@ public class Router extends Device {
         ByteBuffer byteBuffer = ByteBuffer.wrap(dataBytes);
         byteBuffer.putInt(0);
         byte[] ipHeader = ipPacket.serialize();
-        byteBuffer.put(Arrays.copyOfRange(ipHeader, 0, ipPacket.getHeaderLength() * 4));
-        byteBuffer.put(Arrays.copyOfRange(ipHeader, 0, 8));
+        byteBuffer.put(Arrays.copyOfRange(ipHeader, 0, ipPacket.getHeaderLength() * 4 + 8));
         byteBuffer.rewind();
         data.setData(dataBytes);
 
