@@ -129,7 +129,7 @@ public class Router extends Device {
         ipPacket.setTtl((byte) (ipPacket.getTtl() - 1));
         if (0 == ipPacket.getTtl()) {
 //            Time Exceeded ICMP
-            Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 11, (byte) 0);
+            Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 11, (byte) 0, false);
             this.sendPacket(icmpMessage, inIface);
             return;
         }
@@ -143,11 +143,11 @@ public class Router extends Device {
 //                Destination port unreachable ICMP
                 if (ipPacket.getProtocol() == IPv4.PROTOCOL_TCP || ipPacket.getProtocol() == IPv4.PROTOCOL_UDP) {
                     System.err.println("heiheihei");
-                    Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 3);
+                    Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 3, false);
                     this.sendPacket(icmpMessage, inIface);
                 } else if (ipPacket.getProtocol() == IPv4.PROTOCOL_ICMP && ((ICMP) ipPacket.getPayload()).getIcmpType() == 8) {
-//                Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 3);
-//                this.sendPacket(icmpMessage, inIface);
+                    Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 0, (byte) 0, true);
+                    this.sendPacket(icmpMessage, inIface);
                 }
                 return;
             }
@@ -174,7 +174,7 @@ public class Router extends Device {
         // If no entry matched, do nothing
         if (null == bestMatch) {
 //            Destination net unreachable ICMP
-            Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 0);
+            Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 0, false);
             this.sendPacket(icmpMessage, inIface);
             return;
         }
@@ -201,7 +201,7 @@ public class Router extends Device {
         ArpEntry arpEntry = this.arpCache.lookup(nextHop);
         if (null == arpEntry) {
 //            Destination net unreachable ICMP
-            Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 1);
+            Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 1, false);
             this.sendPacket(icmpMessage, inIface);
             return;
         }
@@ -210,7 +210,7 @@ public class Router extends Device {
         this.sendPacket(etherPacket, outIface);
     }
 
-    private Ethernet getICMPMessage(Iface inIface, IPv4 ipPacket, byte type, byte code) {
+    private Ethernet getICMPMessage(Iface inIface, IPv4 ipPacket, byte type, byte code, boolean echo) {
         Ethernet ethernet = new Ethernet();
         IPv4 iPv4 = new IPv4();
         ICMP icmp = new ICMP();
@@ -223,7 +223,8 @@ public class Router extends Device {
 
         iPv4.setTtl((byte) 64);
         iPv4.setProtocol(IPv4.PROTOCOL_ICMP);
-        iPv4.setSourceAddress(inIface.getIpAddress());
+        if (echo) iPv4.setSourceAddress(ipPacket.getDestinationAddress());
+        else iPv4.setSourceAddress(inIface.getIpAddress());
         iPv4.setDestinationAddress(ipPacket.getSourceAddress());
         iPv4.setPayload(icmp);
 
@@ -231,15 +232,17 @@ public class Router extends Device {
         icmp.setIcmpCode(code);
         icmp.setPayload(data);
 
-        int length = 4 + ipPacket.getHeaderLength() * 4 + 8;
-        byte[] dataBytes = new byte[length];
-        ByteBuffer byteBuffer = ByteBuffer.wrap(dataBytes);
-        byteBuffer.putInt(0);
-        byte[] ipHeader = ipPacket.serialize();
-        byteBuffer.put(Arrays.copyOfRange(ipHeader, 0, ipPacket.getHeaderLength() * 4 + 8));
-        byteBuffer.rewind();
-        data.setData(dataBytes);
-
+        if (echo) data.setData(ipPacket.getPayload().getPayload().serialize());
+        else {
+            int length = 4 + ipPacket.getHeaderLength() * 4 + 8;
+            byte[] dataBytes = new byte[length];
+            ByteBuffer byteBuffer = ByteBuffer.wrap(dataBytes);
+            byteBuffer.putInt(0);
+            byte[] ipHeader = ipPacket.serialize();
+            byteBuffer.put(Arrays.copyOfRange(ipHeader, 0, ipPacket.getHeaderLength() * 4 + 8));
+            byteBuffer.rewind();
+            data.setData(dataBytes);
+        }
         return ethernet;
     }
 }
