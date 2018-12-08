@@ -195,7 +195,6 @@ public class Router extends Device {
     }
 
     private Ethernet getICMPMessage(Iface inIface, IPv4 ipPacket, byte type, byte code) {
-        System.err.println("hehehehehehe");
         Ethernet ethernet = new Ethernet();
         IPv4 iPv4 = new IPv4();
         ICMP icmp = new ICMP();
@@ -208,9 +207,6 @@ public class Router extends Device {
 
         iPv4.setTtl((byte) 64);
         iPv4.setProtocol(IPv4.PROTOCOL_ICMP);
-        System.err.println(HexString.toHexString(inIface.getIpAddress()));
-        System.err.println(HexString.toHexString(ipPacket.getSourceAddress()));
-        System.err.println(HexString.toHexString(ipPacket.getDestinationAddress()));
         iPv4.setSourceAddress(inIface.getIpAddress());
         iPv4.setDestinationAddress(ipPacket.getSourceAddress());
         iPv4.setPayload(icmp);
@@ -229,7 +225,7 @@ public class Router extends Device {
         byteBuffer.rewind();
         data.setData(dataBytes);
 
-        System.err.println("src: " + HexString.toHexString(iPv4.getSourceAddress()) + "\tdst: " + HexString.toHexString(iPv4.getDestinationAddress()));
+        System.err.println("src: " + HexString.toHexString(inIface.getMacAddress().toBytes()) + "\tdst: " + HexString.toHexString(arpCache.lookup(ipPacket.getSourceAddress()).getMac().toBytes()));
         return ethernet;
     }
 }
