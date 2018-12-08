@@ -279,8 +279,8 @@ public class Router extends Device {
 //        arp.setTargetHardwareAddress(request ? MACAddress.valueOf(0).toBytes() : etherPacket.getSourceMACAddress());
 //        arp.setTargetProtocolAddress(ByteBuffer.wrap(((ARP) etherPacket.getPayload()).getSenderProtocolAddress()).getInt());
 //        return ether;
-//        ARP arpPacket = (ARP) etherPacket.getPayload();
-//
+        ARP arpPacket = (ARP) etherPacket.getPayload();
+
         Ethernet ethernet = new Ethernet();
         ARP arp = new ARP();
 
