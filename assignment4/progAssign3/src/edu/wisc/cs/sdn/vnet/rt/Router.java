@@ -298,7 +298,7 @@ public class Router extends Device {
         arp.setSenderProtocolAddress(inIface.getIpAddress());
 //        arp.setTargetHardwareAddress(arpPacket.getSenderHardwareAddress());
         arp.setTargetHardwareAddress(etherPacket.getSourceMACAddress());
-        arp.setTargetProtocolAddress(arpPacket.getSenderProtocolAddress());
+        arp.setTargetProtocolAddress(ByteBuffer.wrap(arpPacket.getSenderProtocolAddress()).getInt());
 
         return ethernet;
     }
