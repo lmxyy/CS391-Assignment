@@ -172,13 +172,15 @@ public class Router extends Device {
 
         // Make sure we don't sent a packet back out the interface it came in
         Iface outIface = bestMatch.getInterface();
+//        Destination port unreachable ICMP
         if (outIface == inIface) {
             if (ipPacket.getProtocol() == IPv4.PROTOCOL_UDP || ipPacket.getProtocol() == IPv4.PROTOCOL_UDP) {
+                System.err.println("heiheihei");
                 Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 3);
                 this.sendPacket(icmpMessage, inIface);
             } else if (ipPacket.getProtocol() == IPv4.PROTOCOL_ICMP && ((ICMP) ipPacket.getPayload()).getIcmpType() == 8) {
-                Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 3);
-                this.sendPacket(icmpMessage, inIface);
+//                Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 3);
+//                this.sendPacket(icmpMessage, inIface);
             }
             return;
         }
