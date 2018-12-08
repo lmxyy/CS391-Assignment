@@ -34,7 +34,7 @@
 4. Symlink POX and configure the POX modules
 
    ```bash
-   cd /path/to/progAssign2
+   cd /path/to/progAssign3
    ln -s /path/to/pox
    ./config.sh
    ```
@@ -44,7 +44,7 @@
 First you need to compile the code by running the following command:
 
 ```bash
-cd /path/to/progAssign2
+cd /path/to/progAssign3
 ant
 ```
 
@@ -53,8 +53,9 @@ ant
 1. Start Mininet emulation by running the following commands. You need to choose one topo from directory ```topos``` and then replace `yourtopo` in the command with the name of topo you choose.
 
    ```bash
-   cd /path/to/progAssign2
-   sudo python ./run_mininet.py topos/yourtopo -a
+   cd /path/to/progAssign3
+   sudo mn -c
+   sudo python ./run_mininet.py topos/yourtopo -a 
    ```
 
    Keep this terminal open.
@@ -79,19 +80,21 @@ ant
 4. For every router in your topo, open one terminal and run the following command:
 
    ```bash
-   cd /path/to/progAssign2
+   cd /path/to/progAssign3
    java -jar VirtualNetwork.jar -v [router] -r [route_table] -a arp_cache
    ```
 
    For example, if you are running the above command for router `r1`, the command will be
 
    ```bash
-   cd /path/to/progAssign2
+   cd /path/to/progAssign3
    java -jar VirtualNetwork.jar -v r1 -r rtable.r1 -a arp_cache
    ```
 
-5. Turn back to your Mininet terminal. Now you can run the `ping` command, such as
+5. Testing. Turn back to your Mininet terminal, take `sing_rt.topo` as an example: 
 
-   ```bash
-   h1 ping -c 2 h2
-   ```
+   * Time exceeded ICMP
+
+     ```bash
+     h1 traceroute -n 10.0.2.102
+     ```

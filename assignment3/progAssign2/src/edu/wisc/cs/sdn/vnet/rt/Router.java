@@ -3,12 +3,8 @@ package edu.wisc.cs.sdn.vnet.rt;
 import edu.wisc.cs.sdn.vnet.Device;
 import edu.wisc.cs.sdn.vnet.DumpFile;
 import edu.wisc.cs.sdn.vnet.Iface;
-
 import net.floodlightcontroller.packet.Ethernet;
 import net.floodlightcontroller.packet.IPv4;
-import org.openflow.util.HexString;
-
-import java.nio.ByteBuffer;
 
 /**
  * @author Aaron Gember-Jacobson and Anubhavnidhi Abhashkumar
@@ -122,7 +118,7 @@ public class Router extends Device {
             return;
 //        Ready for forwarding the packet.
         RouteEntry entry = routeTable.lookup(destinationAddress);
-        if (entry == null||entry.getInterface() == inIface)
+        if (entry == null || entry.getInterface() == inIface)
             return;
         etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
         etherPacket.setDestinationMACAddress(arpCache.lookup(destinationAddress).getMac().toBytes());
