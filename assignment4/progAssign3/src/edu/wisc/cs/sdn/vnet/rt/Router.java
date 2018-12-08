@@ -127,6 +127,7 @@ public class Router extends Device {
 
         // Check TTL
         ipPacket.setTtl((byte) (ipPacket.getTtl() - 1));
+        System.err.println("TTL: "+ipPacket.getTtl());
         if (0 == ipPacket.getTtl()) {
 //            Time Exceeded ICMP
             System.err.println("lalalalalala");
