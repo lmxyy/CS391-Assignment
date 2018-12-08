@@ -8,6 +8,7 @@ import net.floodlightcontroller.packet.Data;
 import net.floodlightcontroller.packet.Ethernet;
 import net.floodlightcontroller.packet.ICMP;
 import net.floodlightcontroller.packet.IPv4;
+import org.openflow.util.HexString;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -129,7 +130,7 @@ public class Router extends Device {
         if (0 == ipPacket.getTtl()) {
 //            Time Exceeded ICMP
             Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 11, (byte) 0);
-            this.sendPacket(icmpMessage,inIface);
+            this.sendPacket(icmpMessage, inIface);
             return;
         }
 
@@ -222,6 +223,7 @@ public class Router extends Device {
         byteBuffer.rewind();
         data.setData(dataBytes);
 
+        System.err.println("src: " + HexString.toHexString(iPv4.getSourceAddress()) + "\tdst: " + HexString.toHexString(iPv4.getDestinationAddress()));
         return ethernet;
     }
 }
