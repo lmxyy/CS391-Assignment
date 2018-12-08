@@ -92,9 +92,11 @@ public class Router extends Device {
 
         switch (etherPacket.getEtherType()) {
             case Ethernet.TYPE_IPv4:
+                System.err.println("handle ipv4 packet.");
                 this.handleIpPacket(etherPacket, inIface);
                 break;
             // Ignore all other packet types, for now
+            default: System.err.println("some other packet.");
         }
 
         /********************************************************************/
