@@ -4,10 +4,7 @@ import edu.wisc.cs.sdn.vnet.Device;
 import edu.wisc.cs.sdn.vnet.DumpFile;
 import edu.wisc.cs.sdn.vnet.Iface;
 
-import net.floodlightcontroller.packet.Data;
-import net.floodlightcontroller.packet.Ethernet;
-import net.floodlightcontroller.packet.ICMP;
-import net.floodlightcontroller.packet.IPv4;
+import net.floodlightcontroller.packet.*;
 import org.openflow.util.HexString;
 
 import java.nio.ByteBuffer;
@@ -96,7 +93,9 @@ public class Router extends Device {
             case Ethernet.TYPE_IPv4:
                 this.handleIpPacket(etherPacket, inIface);
                 break;
-            // Ignore all other packet types, for now
+            case Ethernet.TYPE_ARP:
+                this.handleArpPacket(etherPacket, inIface);
+                break;
             default:
                 System.err.println("An unknown packet.");
                 break;
@@ -129,7 +128,7 @@ public class Router extends Device {
         ipPacket.setTtl((byte) (ipPacket.getTtl() - 1));
         if (0 == ipPacket.getTtl()) {
 //            Time Exceeded ICMP
-            Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 11, (byte) 0, false);
+            Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, (byte) 11, (byte) 0, false);
             this.sendPacket(icmpMessage, inIface);
             return;
         }
@@ -143,10 +142,10 @@ public class Router extends Device {
 //                Destination port unreachable ICMP
                 if (ipPacket.getProtocol() == IPv4.PROTOCOL_TCP || ipPacket.getProtocol() == IPv4.PROTOCOL_UDP) {
                     System.err.println("heiheihei");
-                    Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 3, false);
+                    Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, (byte) 3, (byte) 3, false);
                     this.sendPacket(icmpMessage, inIface);
                 } else if (ipPacket.getProtocol() == IPv4.PROTOCOL_ICMP && ((ICMP) ipPacket.getPayload()).getIcmpType() == 8) {
-                    Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 0, (byte) 0, true);
+                    Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, (byte) 0, (byte) 0, true);
                     this.sendPacket(icmpMessage, inIface);
                 }
                 return;
@@ -174,7 +173,7 @@ public class Router extends Device {
         // If no entry matched, do nothing
         if (null == bestMatch) {
 //            Destination net unreachable ICMP
-            Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 0, false);
+            Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, (byte) 3, (byte) 0, false);
             this.sendPacket(icmpMessage, inIface);
             return;
         }
@@ -184,7 +183,6 @@ public class Router extends Device {
 //        Destination port unreachable ICMP
 
         if (outIface == inIface) {
-
             return;
         }
 
@@ -201,7 +199,7 @@ public class Router extends Device {
         ArpEntry arpEntry = this.arpCache.lookup(nextHop);
         if (null == arpEntry) {
 //            Destination net unreachable ICMP
-            Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 1, false);
+            Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, (byte) 3, (byte) 1, false);
             this.sendPacket(icmpMessage, inIface);
             return;
         }
@@ -210,7 +208,7 @@ public class Router extends Device {
         this.sendPacket(etherPacket, outIface);
     }
 
-    private Ethernet getICMPMessage(Iface inIface, IPv4 ipPacket, byte type, byte code, boolean echo) {
+    private Ethernet getIcmpMessage(Iface inIface, IPv4 ipPacket, byte type, byte code, boolean echo) {
         Ethernet ethernet = new Ethernet();
         IPv4 iPv4 = new IPv4();
         ICMP icmp = new ICMP();
@@ -243,6 +241,41 @@ public class Router extends Device {
             byteBuffer.rewind();
             data.setData(dataBytes);
         }
+        return ethernet;
+    }
+
+    private void handleArpPacket(Ethernet etherPacket, Iface inIface) {
+        ARP arpPacket = (ARP) etherPacket.getPayload();
+        if (arpPacket.getOpCode() == ARP.OP_REQUEST) {
+            int targetIp = ByteBuffer.wrap(arpPacket.getTargetProtocolAddress()).getInt();
+            if (targetIp == inIface.getIpAddress()) {
+                Ethernet arpMessage = getArpMessage(etherPacket, inIface);
+                this.sendPacket(arpMessage, inIface);
+            }
+        }
+    }
+
+    private Ethernet getArpMessage(Ethernet etherPacket, Iface inIface) {
+        ARP arpPacket = (ARP) etherPacket.getPayload();
+
+        Ethernet ethernet = new Ethernet();
+        ARP arp = new ARP();
+
+        ethernet.setEtherType(Ethernet.TYPE_ARP);
+        ethernet.setSourceMACAddress(inIface.getMacAddress().toBytes());
+        ethernet.setDestinationMACAddress(ethernet.getSourceMACAddress());
+        ethernet.setPayload(arp);
+
+        arp.setHardwareType(ARP.HW_TYPE_ETHERNET);
+        arp.setProtocolType(ARP.PROTO_TYPE_IP);
+        arp.setHardwareAddressLength((byte) Ethernet.DATALAYER_ADDRESS_LENGTH);
+        arp.setProtocolAddressLength((byte) 4);
+        arp.setOpCode(ARP.OP_REPLY);
+        arp.setSenderHardwareAddress(inIface.getMacAddress().toBytes());
+        arp.setSenderProtocolAddress(inIface.getIpAddress());
+        arp.setTargetHardwareAddress(arpPacket.getSenderHardwareAddress());
+        arp.setTargetProtocolAddress(arpPacket.getSenderProtocolAddress());
+
         return ethernet;
     }
 }
