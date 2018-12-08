@@ -1,19 +1,19 @@
 /**
-*    Copyright 2011, Big Switch Networks, Inc. 
-*    Originally created by David Erickson, Stanford University
-* 
-*    Licensed under the Apache License, Version 2.0 (the "License"); you may
-*    not use this file except in compliance with the License. You may obtain
-*    a copy of the License at
-*
-*         http://www.apache.org/licenses/LICENSE-2.0
-*
-*    Unless required by applicable law or agreed to in writing, software
-*    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-*    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-*    License for the specific language governing permissions and limitations
-*    under the License.
-**/
+ * Copyright 2011, Big Switch Networks, Inc.
+ * Originally created by David Erickson, Stanford University
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ **/
 
 package net.floodlightcontroller.packet;
 
@@ -71,71 +71,86 @@ public class TCP extends BasePacket {
     public short getChecksum() {
         return checksum;
     }
-    
+
     public int getSequence() {
         return this.sequence;
     }
+
     public TCP setSequence(int seq) {
         this.sequence = seq;
         return this;
     }
+
     public int getAcknowledge() {
         return this.acknowledge;
     }
+
     public TCP setAcknowledge(int ack) {
         this.acknowledge = ack;
         return this;
     }
+
     public byte getDataOffset() {
         return this.dataOffset;
     }
+
     public TCP setDataOffset(byte offset) {
         this.dataOffset = offset;
         return this;
     }
+
     public short getFlags() {
         return this.flags;
     }
+
     public TCP setFlags(short flags) {
         this.flags = flags;
         return this;
     }
+
     public short getWindowSize() {
         return this.windowSize;
     }
+
     public TCP setWindowSize(short windowSize) {
         this.windowSize = windowSize;
         return this;
     }
+
     public short getTcpChecksum() {
         return this.checksum;
     }
+
     public TCP setTcpChecksum(short checksum) {
         this.checksum = checksum;
         return this;
     }
-    
+
     @Override
     public void resetChecksum() {
         this.checksum = 0;
         super.resetChecksum();
     }
-    
+
     public short getUrgentPointer(short urgentPointer) {
         return this.urgentPointer;
     }
+
     public TCP setUrgentPointer(short urgentPointer) {
-        this.urgentPointer= urgentPointer;
+        this.urgentPointer = urgentPointer;
         return this;
     }
+
     public byte[] getOptions() {
         return this.options;
     }
+
     public TCP setOptions(byte[] options) {
         this.options = options;
         this.dataOffset = (byte) ((20 + options.length + 3) >> 2);
         return this;
     }
+
     /**
      * @param checksum the checksum to set
      */
@@ -184,7 +199,7 @@ public class TCP extends BasePacket {
             bb.put(payloadData);
 
         if (this.parent != null && this.parent instanceof IPv4)
-            ((IPv4)this.parent).setProtocol(IPv4.PROTOCOL_TCP);
+            ((IPv4) this.parent).setProtocol(IPv4.PROTOCOL_TCP);
 
         // compute checksum if needed
         if (this.checksum == 0) {
@@ -245,15 +260,15 @@ public class TCP extends BasePacket {
         TCP other = (TCP) obj;
         // May want to compare fields based on the flags set
         return (checksum == other.checksum) &&
-               (destinationPort == other.destinationPort) &&
-               (sourcePort == other.sourcePort) &&
-               (sequence == other.sequence) &&
-               (acknowledge == other.acknowledge) &&
-               (dataOffset == other.dataOffset) &&
-               (flags == other.flags) &&
-               (windowSize == other.windowSize) &&
-               (urgentPointer == other.urgentPointer) &&
-               (dataOffset == 5 || options.equals(other.options));
+                (destinationPort == other.destinationPort) &&
+                (sourcePort == other.sourcePort) &&
+                (sequence == other.sequence) &&
+                (acknowledge == other.acknowledge) &&
+                (dataOffset == other.dataOffset) &&
+                (flags == other.flags) &&
+                (windowSize == other.windowSize) &&
+                (urgentPointer == other.urgentPointer) &&
+                (dataOffset == 5 || options.equals(other.options));
     }
 
     @Override
@@ -271,7 +286,7 @@ public class TCP extends BasePacket {
         this.urgentPointer = bb.getShort();
         if (this.dataOffset > 5) {
             int optLength = (dataOffset << 2) - 20;
-            if (bb.limit() < bb.position()+optLength) {
+            if (bb.limit() < bb.position() + optLength) {
                 optLength = bb.limit() - bb.position();
             }
             try {
@@ -281,9 +296,9 @@ public class TCP extends BasePacket {
                 this.options = null;
             }
         }
-        
+
         this.payload = new Data();
-        this.payload = payload.deserialize(data, bb.position(), bb.limit()-bb.position());
+        this.payload = payload.deserialize(data, bb.position(), bb.limit() - bb.position());
         this.payload.setParent(this);
         return this;
     }

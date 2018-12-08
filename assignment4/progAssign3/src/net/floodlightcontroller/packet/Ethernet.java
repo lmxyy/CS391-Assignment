@@ -1,19 +1,19 @@
 /**
-*    Copyright 2011, Big Switch Networks, Inc. 
-*    Originally created by David Erickson, Stanford University
-* 
-*    Licensed under the Apache License, Version 2.0 (the "License"); you may
-*    not use this file except in compliance with the License. You may obtain
-*    a copy of the License at
-*
-*         http://www.apache.org/licenses/LICENSE-2.0
-*
-*    Unless required by applicable law or agreed to in writing, software
-*    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-*    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-*    License for the specific language governing permissions and limitations
-*    under the License.
-**/
+ * Copyright 2011, Big Switch Networks, Inc.
+ * Originally created by David Erickson, Stanford University
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ **/
 
 package net.floodlightcontroller.packet;
 
@@ -35,7 +35,7 @@ public class Ethernet extends BasePacket {
     public static final short TYPE_IPv4 = 0x0800;
     public static final short TYPE_LLDP = (short) 0x88cc;
     public static final short TYPE_BSN = (short) 0x8942;
-    public static final short VLAN_UNTAGGED = (short)0xffff;
+    public static final short VLAN_UNTAGGED = (short) 0xffff;
     public static final short DATALAYER_ADDRESS_LENGTH = 6; // bytes
     public static Map<Short, Class<? extends IPacket>> etherTypeClassMap;
 
@@ -60,14 +60,14 @@ public class Ethernet extends BasePacket {
         super();
         this.vlanID = VLAN_UNTAGGED;
     }
-    
+
     /**
      * @return the destination MAC as a byte array
      */
     public byte[] getDestinationMACAddress() {
         return destinationMACAddress.toBytes();
     }
-    
+
     /**
      * @return the destination MAC
      */
@@ -97,7 +97,7 @@ public class Ethernet extends BasePacket {
     public byte[] getSourceMACAddress() {
         return sourceMACAddress.toBytes();
     }
-    
+
     /**
      * @return the source MACAddress
      */
@@ -165,21 +165,22 @@ public class Ethernet extends BasePacket {
         this.etherType = etherType;
         return this;
     }
-    
+
     /**
      * @return True if the Ethernet frame is broadcast, false otherwise
      */
     public boolean isBroadcast() {
-        assert(destinationMACAddress.length() == 6);
+        assert (destinationMACAddress.length() == 6);
         return destinationMACAddress.isBroadcast();
     }
-    
+
     /**
      * @return True is the Ethernet frame is multicast, False otherwise
      */
     public boolean isMulticast() {
         return destinationMACAddress.isMulticast();
     }
+
     /**
      * Pad this packet to 60 bytes minimum, filling with zeros?
      * @return the pad
@@ -204,7 +205,7 @@ public class Ethernet extends BasePacket {
             payloadData = payload.serialize();
         }
         int length = 14 + ((vlanID == VLAN_UNTAGGED) ? 0 : 4) +
-                          ((payloadData == null) ? 0 : payloadData.length);
+                ((payloadData == null) ? 0 : payloadData.length);
         if (pad && length < 60) {
             length = 60;
         }
@@ -220,7 +221,7 @@ public class Ethernet extends BasePacket {
         if (payloadData != null)
             bb.put(payloadData);
         if (pad) {
-            Arrays.fill(data, bb.position(), data.length, (byte)0x0);
+            Arrays.fill(data, bb.position(), data.length, (byte) 0x0);
         }
         return data;
     }
@@ -252,7 +253,7 @@ public class Ethernet extends BasePacket {
             this.vlanID = VLAN_UNTAGGED;
         }
         this.etherType = etherType;
-        
+
         IPacket payload;
         if (Ethernet.etherTypeClassMap.containsKey(this.etherType)) {
             Class<? extends IPacket> clazz = Ethernet.etherTypeClassMap.get(this.etherType);
@@ -264,7 +265,7 @@ public class Ethernet extends BasePacket {
         } else {
             payload = new Data();
         }
-        this.payload = payload.deserialize(data, bb.position(), bb.limit()-bb.position());
+        this.payload = payload.deserialize(data, bb.position(), bb.limit() - bb.position());
         this.payload.setParent(this);
         return this;
     }
@@ -279,8 +280,8 @@ public class Ethernet extends BasePacket {
         if (macBytes.length != 6)
             return false;
         for (int i = 0; i < 6; ++i) {
-            if (HEXES.indexOf(macBytes[i].toUpperCase().charAt(0)) == -1 || 
-                HEXES.indexOf(macBytes[i].toUpperCase().charAt(1)) == -1) {
+            if (HEXES.indexOf(macBytes[i].toUpperCase().charAt(0)) == -1 ||
+                    HEXES.indexOf(macBytes[i].toUpperCase().charAt(1)) == -1) {
                 return false;
             }
         }
@@ -316,7 +317,7 @@ public class Ethernet extends BasePacket {
     public static byte[] toByteArray(long macAddress) {
         return MACAddress.valueOf(macAddress).toBytes();
     }
-    
+
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */
@@ -359,7 +360,7 @@ public class Ethernet extends BasePacket {
             return false;
         return true;
     }
-    
+
     /* (non-Javadoc)
      * @see java.lang.Object#toString(java.lang.Object)
      */
@@ -376,7 +377,7 @@ public class Ethernet extends BasePacket {
             sb.append("icmp");
         else if (pkt instanceof IPv4)
             sb.append("ip");
-        else  sb.append(this.getEtherType());
+        else sb.append(this.getEtherType());
 
         sb.append("\ndl_vlan: ");
         if (this.getVlanID() == Ethernet.VLAN_UNTAGGED)
@@ -397,15 +398,13 @@ public class Ethernet extends BasePacket {
             sb.append(IPv4.fromIPv4Address(IPv4.toIPv4Address(p.getSenderProtocolAddress())));
             sb.append("\nnw_dst: ");
             sb.append(IPv4.fromIPv4Address(IPv4.toIPv4Address(p.getTargetProtocolAddress())));
-        }
-        else if (pkt instanceof ICMP) {
+        } else if (pkt instanceof ICMP) {
             ICMP icmp = (ICMP) pkt;
             sb.append("\nicmp_type: ");
             sb.append(icmp.getIcmpType());
             sb.append("\nicmp_code: ");
             sb.append(icmp.getIcmpCode());
-        }
-        else if (pkt instanceof IPv4) {
+        } else if (pkt instanceof IPv4) {
             IPv4 p = (IPv4) pkt;
             sb.append("\nnw_src: ");
             sb.append(IPv4.fromIPv4Address(p.getSourceAddress()));
@@ -416,7 +415,7 @@ public class Ethernet extends BasePacket {
             sb.append("\nnw_proto: ");
             sb.append(p.getProtocol());
 
-            pkt = (IPacket)p.getPayload();
+            pkt = (IPacket) p.getPayload();
             if (pkt instanceof TCP) {
                 sb.append("\ntp_src: ");
                 sb.append(((TCP) pkt).getSourcePort());
@@ -438,11 +437,9 @@ public class Ethernet extends BasePacket {
                 sb.append(icmp.getIcmpCode());
             }
 
-        }
-        else if (pkt instanceof Data) {
+        } else if (pkt instanceof Data) {
             sb.append("\ndata packet");
-        }
-        else sb.append("\nunknwon packet");
+        } else sb.append("\nunknwon packet");
 
         return sb.toString();
     }
