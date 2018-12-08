@@ -133,7 +133,6 @@ public class Router extends Device {
             this.sendPacket(icmpMessage, inIface);
             return;
         }
-        System.err.println("lalala");
 
         // Reset checksum now that TTL is decremented
         ipPacket.resetChecksum();
@@ -141,6 +140,15 @@ public class Router extends Device {
         // Check if packet is destined for one of router's interfaces
         for (Iface iface : this.interfaces.values()) {
             if (ipPacket.getDestinationAddress() == iface.getIpAddress()) {
+//                Destination port unreachable ICMP
+                if (ipPacket.getProtocol() == IPv4.PROTOCOL_TCP || ipPacket.getProtocol() == IPv4.PROTOCOL_UDP) {
+                    System.err.println("heiheihei");
+                    Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 3);
+                    this.sendPacket(icmpMessage, inIface);
+                } else if (ipPacket.getProtocol() == IPv4.PROTOCOL_ICMP && ((ICMP) ipPacket.getPayload()).getIcmpType() == 8) {
+//                Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 3);
+//                this.sendPacket(icmpMessage, inIface);
+                }
                 return;
             }
         }
@@ -176,15 +184,7 @@ public class Router extends Device {
 //        Destination port unreachable ICMP
 
         if (outIface == inIface) {
-            System.err.println(ipPacket.getProtocol());
-            if (ipPacket.getProtocol() == IPv4.PROTOCOL_TCP || ipPacket.getProtocol() == IPv4.PROTOCOL_UDP) {
-                System.err.println("heiheihei");
-                Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 3);
-                this.sendPacket(icmpMessage, inIface);
-            } else if (ipPacket.getProtocol() == IPv4.PROTOCOL_ICMP && ((ICMP) ipPacket.getPayload()).getIcmpType() == 8) {
-//                Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 3);
-//                this.sendPacket(icmpMessage, inIface);
-            }
+
             return;
         }
 
