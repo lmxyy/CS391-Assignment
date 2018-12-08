@@ -129,6 +129,7 @@ public class Router extends Device {
         ipPacket.setTtl((byte) (ipPacket.getTtl() - 1));
         if (0 == ipPacket.getTtl()) {
 //            Time Exceeded ICMP
+            System.err.println("lalalalalala");
             Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 11, (byte) 0);
             this.sendPacket(icmpMessage, inIface);
             return;
@@ -193,7 +194,7 @@ public class Router extends Device {
     }
 
     private Ethernet getICMPMessage(Iface inIface, IPv4 ipPacket, byte type, byte code) {
-        System.err.println("hehehe")
+        System.err.println("hehehehehehe");
         Ethernet ethernet = new Ethernet();
         IPv4 iPv4 = new IPv4();
         ICMP icmp = new ICMP();
