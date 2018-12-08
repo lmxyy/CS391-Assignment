@@ -40,7 +40,6 @@ public class RouteTable {
     public RouteEntry lookup(int ip) {
         synchronized (this.entries) {
             /*****************************************************************/
-            /* TODO: Find the route entry with the longest prefix match      */
 
             RouteEntry bestMatch = null;
             for (RouteEntry entry : this.entries) {

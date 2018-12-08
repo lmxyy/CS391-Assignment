@@ -32,7 +32,6 @@ public class Switch extends Device {
                 etherPacket.toString().replace("\n", "\n\t"));
 
         /********************************************************************/
-        /* TODO: Handle packets                                             */
 
         this.macTable.insert(etherPacket.getSourceMAC(), inIface);
 
