@@ -248,11 +248,8 @@ public class Router extends Device {
         ARP arpPacket = (ARP) etherPacket.getPayload();
         System.out.println("Handle ARP packet");
         if (arpPacket.getOpCode() == ARP.OP_REQUEST) {
-            System.out.println("ARP Request.");
             int targetIp = ByteBuffer.wrap(arpPacket.getTargetProtocolAddress()).getInt();
-            System.out.println(HexString.toHexString(targetIp));
             if (targetIp == inIface.getIpAddress()) {
-                System.out.println("Send ARP Reply.");
                 Ethernet arpMessage = getArpMessage(etherPacket, inIface);
                 this.sendPacket(arpMessage, inIface);
             }
@@ -282,8 +279,8 @@ public class Router extends Device {
         System.err.println(HexString.toHexString(arpPacket.getSenderHardwareAddress()));
         System.err.println(HexString.toHexString(arpPacket.getSenderProtocolAddress()));
         arp.setTargetHardwareAddress(arpPacket.getSenderHardwareAddress());
-//        arp.setTargetProtocolAddress(ByteBuffer.wrap(arpPacket.getSenderProtocolAddress()).getInt());
-        arp.setTargetProtocolAddress(arpPacket.getSenderProtocolAddress());
+        arp.setTargetProtocolAddress(ByteBuffer.wrap(arpPacket.getSenderProtocolAddress()).getInt());
+//        arp.setTargetProtocolAddress(arpPacket.getSenderProtocolAddress());
         return ethernet;
     }
 }
