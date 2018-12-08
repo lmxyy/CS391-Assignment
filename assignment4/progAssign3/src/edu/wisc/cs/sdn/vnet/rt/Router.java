@@ -124,6 +124,7 @@ public class Router extends Device {
         if (origCksum != calcCksum) {
             return;
         }
+        System.err.println("lalala");
 
         // Check TTL
         ipPacket.setTtl((byte) (ipPacket.getTtl() - 1));
@@ -143,7 +144,6 @@ public class Router extends Device {
                 return;
             }
         }
-        System.err.println("lalala");
 
         // Do route lookup and forward
         this.forwardIpPacket(etherPacket, inIface);
