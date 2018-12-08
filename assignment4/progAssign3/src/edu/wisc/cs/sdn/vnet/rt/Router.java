@@ -173,6 +173,8 @@ public class Router extends Device {
         // Make sure we don't sent a packet back out the interface it came in
         Iface outIface = bestMatch.getInterface();
 //        Destination port unreachable ICMP
+        System.err.println("lalala");
+
         if (outIface == inIface) {
             System.err.println(ipPacket.getProtocol());
             if (ipPacket.getProtocol() == IPv4.PROTOCOL_TCP || ipPacket.getProtocol() == IPv4.PROTOCOL_UDP) {
