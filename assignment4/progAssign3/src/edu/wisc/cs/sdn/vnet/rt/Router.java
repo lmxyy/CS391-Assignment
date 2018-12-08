@@ -124,7 +124,6 @@ public class Router extends Device {
         if (origCksum != calcCksum) {
             return;
         }
-        System.err.println("lalala");
 
         // Check TTL
         ipPacket.setTtl((byte) (ipPacket.getTtl() - 1));
@@ -134,6 +133,7 @@ public class Router extends Device {
             this.sendPacket(icmpMessage, inIface);
             return;
         }
+        System.err.println("lalala");
 
         // Reset checksum now that TTL is decremented
         ipPacket.resetChecksum();
