@@ -127,10 +127,8 @@ public class Router extends Device {
 
         // Check TTL
         ipPacket.setTtl((byte) (ipPacket.getTtl() - 1));
-        System.err.println("TTL: " + ipPacket.getTtl());
         if (0 == ipPacket.getTtl()) {
 //            Time Exceeded ICMP
-            System.err.println("lalalalalala");
             Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 11, (byte) 0);
             this.sendPacket(icmpMessage, inIface);
             return;
@@ -166,12 +164,22 @@ public class Router extends Device {
 
         // If no entry matched, do nothing
         if (null == bestMatch) {
+//            Destination net unreachable ICMP
+            Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 0);
+            this.sendPacket(icmpMessage, inIface);
             return;
         }
 
         // Make sure we don't sent a packet back out the interface it came in
         Iface outIface = bestMatch.getInterface();
         if (outIface == inIface) {
+            if (ipPacket.getProtocol() == IPv4.PROTOCOL_UDP || ipPacket.getProtocol() == IPv4.PROTOCOL_UDP) {
+                Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 3);
+                this.sendPacket(icmpMessage, inIface);
+            } else if (ipPacket.getProtocol() == IPv4.PROTOCOL_ICMP && ((ICMP) ipPacket.getPayload()).getIcmpType() == 8) {
+                Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 3);
+                this.sendPacket(icmpMessage, inIface);
+            }
             return;
         }
 
@@ -187,6 +195,9 @@ public class Router extends Device {
         // Set destination MAC address in Ethernet header
         ArpEntry arpEntry = this.arpCache.lookup(nextHop);
         if (null == arpEntry) {
+//            Destination net unreachable ICMP
+            Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 1);
+            this.sendPacket(icmpMessage, inIface);
             return;
         }
         etherPacket.setDestinationMACAddress(arpEntry.getMac().toBytes());
@@ -224,7 +235,6 @@ public class Router extends Device {
         byteBuffer.rewind();
         data.setData(dataBytes);
 
-        System.err.println("src: " + HexString.toHexString(inIface.getMacAddress().toBytes()) + "\tdst: " + HexString.toHexString(arpCache.lookup(ipPacket.getSourceAddress()).getMac().toBytes()));
         return ethernet;
     }
 }
