@@ -294,14 +294,11 @@ public class Router extends Device {
         arp.setHardwareAddressLength((byte) Ethernet.DATALAYER_ADDRESS_LENGTH);
         arp.setProtocolAddressLength((byte) 4);
         arp.setOpCode(ARP.OP_REPLY);
-        System.err.println(inIface.getMacAddress().toString());
-        System.err.println(HexString.toHexString(inIface.getIpAddress()));
         arp.setSenderHardwareAddress(inIface.getMacAddress().toBytes());
         arp.setSenderProtocolAddress(inIface.getIpAddress());
-        System.err.println(HexString.toHexString(arpPacket.getSenderHardwareAddress()));
-        System.err.println(HexString.toHexString(arpPacket.getSenderProtocolAddress()));
-        arp.setTargetHardwareAddress(arpPacket.getSenderHardwareAddress());
-        arp.setTargetProtocolAddress(ByteBuffer.wrap(arpPacket.getSenderProtocolAddress()).getInt());
+//        arp.setTargetHardwareAddress(arpPacket.getSenderHardwareAddress());
+        arp.setTargetHardwareAddress(etherPacket.getSourceMACAddress());
+        arp.setTargetProtocolAddress(arpPacket.getSenderProtocolAddress());
 
         return ethernet;
     }
