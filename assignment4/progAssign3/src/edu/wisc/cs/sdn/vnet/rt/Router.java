@@ -144,9 +144,8 @@ public class Router extends Device {
             icmp.setIcmpCode((byte) 0);
             icmp.setPayload(data);
 
-            if (inIface == null)
-                System.err.println("inIface is null.");
-            this.forwardIpPacket(ethernet,inIface);
+            System.err.println("aaaa");
+            this.sendPacket(ethernet,inIface);
             return;
         }
 
