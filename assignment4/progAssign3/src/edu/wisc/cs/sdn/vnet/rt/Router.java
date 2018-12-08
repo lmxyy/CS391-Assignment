@@ -174,6 +174,7 @@ public class Router extends Device {
         Iface outIface = bestMatch.getInterface();
 //        Destination port unreachable ICMP
         if (outIface == inIface) {
+            System.err.println(ipPacket.getProtocol());
             if (ipPacket.getProtocol() == IPv4.PROTOCOL_TCP || ipPacket.getProtocol() == IPv4.PROTOCOL_UDP) {
                 System.err.println("heiheihei");
                 Ethernet icmpMessage = getICMPMessage(inIface, ipPacket, (byte) 3, (byte) 3);
