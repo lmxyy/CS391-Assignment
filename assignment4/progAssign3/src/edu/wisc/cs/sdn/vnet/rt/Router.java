@@ -193,6 +193,7 @@ public class Router extends Device {
     }
 
     private Ethernet getICMPMessage(Iface inIface, IPv4 ipPacket, byte type, byte code) {
+        System.err.println("hehehe")
         Ethernet ethernet = new Ethernet();
         IPv4 iPv4 = new IPv4();
         ICMP icmp = new ICMP();
