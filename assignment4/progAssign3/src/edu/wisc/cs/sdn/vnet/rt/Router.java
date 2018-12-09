@@ -309,23 +309,21 @@ public class Router extends Device {
         if (arpEntry != null) {
             ethernet.setDestinationMACAddress(arpEntry.getMac().toBytes());
         } else {
-//            RouteEntry routeEntry = routeTable.lookup(ipPacket.getSourceAddress());
-//            int nextHop = 0;
-//            if (routeEntry.getGatewayAddress() != 0)
-//                nextHop = routeEntry.getGatewayAddress();
-//            else nextHop = ipPacket.getSourceAddress();
-//            arpEntry = arpCache.get().lookup(nextHop);
-//            if (arpEntry == null) {
-//                System.err.println("$$$$$$$$$$" + HexString.toHexString(nextHop));
-//                if (!mapQueues.get().containsKey(nextHop)) {
-//                    mapQueues.get().put(nextHop, new LinkedBlockingQueue<PacketIface>());
-//                    WaitArpReply waitArpReply = new WaitArpReply(ethernet, inIface, nextHop, mapQueues);
-//                    thread = new Thread(waitArpReply);
-//                }
-//                mapQueues.get().get(nextHop).add(new PacketIface(ethernet, inIface, inIface));
-//            } else ethernet.setDestinationMACAddress(arpEntry.getMac().toBytes());
-            System.err.println("**********"+((Ethernet) ipPacket.getParent()).getSourceMAC().toString());
-            ethernet.setDestinationMACAddress(((Ethernet) ipPacket.getParent()).getSourceMACAddress());
+            RouteEntry routeEntry = routeTable.lookup(ipPacket.getSourceAddress());
+            int nextHop = 0;
+            if (routeEntry.getGatewayAddress() != 0)
+                nextHop = routeEntry.getGatewayAddress();
+            else nextHop = ipPacket.getSourceAddress();
+            arpEntry = arpCache.get().lookup(nextHop);
+            if (arpEntry == null) {
+                System.err.println("$$$$$$$$$$" + HexString.toHexString(nextHop));
+                if (!mapQueues.get().containsKey(nextHop)) {
+                    mapQueues.get().put(nextHop, new LinkedBlockingQueue<PacketIface>());
+                    WaitArpReply waitArpReply = new WaitArpReply(ethernet, inIface, nextHop, mapQueues);
+                    thread = new Thread(waitArpReply);
+                }
+                mapQueues.get().get(nextHop).add(new PacketIface(ethernet, inIface, inIface));
+            } else ethernet.setDestinationMACAddress(arpEntry.getMac().toBytes());
         }
         ethernet.setPayload(iPv4);
 
