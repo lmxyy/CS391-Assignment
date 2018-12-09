@@ -462,6 +462,7 @@ public class Router extends Device {
     }
 
     private void handleRipPacket(Ethernet etherPacket, Iface inIface) {
+        System.out.println("Handle rip packet.");
         IPv4 ipPacket = (IPv4) etherPacket.getPayload();
         UDP udpPacket = (UDP) ipPacket.getPayload();
 
