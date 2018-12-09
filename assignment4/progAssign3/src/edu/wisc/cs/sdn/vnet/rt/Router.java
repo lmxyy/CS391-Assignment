@@ -173,7 +173,7 @@ public class Router extends Device {
 
         // Get IP header
         IPv4 ipPacket = (IPv4) etherPacket.getPayload();
-        System.out.println("Handle IP packet111111111111");
+        System.out.println("Handle IP packet");
 
         // Verify checksum
         short origCksum = ipPacket.getChecksum();
@@ -221,7 +221,7 @@ public class Router extends Device {
         if (etherPacket.getEtherType() != Ethernet.TYPE_IPv4) {
             return;
         }
-        System.out.println("Forward IP packet2222222222");
+        System.out.println("Forward IP packet");
         System.out.println("Get IP header.");
 
         // Get IP header
