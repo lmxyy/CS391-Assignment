@@ -79,6 +79,7 @@ public class Main {
             if (routeTableFile != null) {
                 ((Router) dev).loadRouteTable(routeTableFile);
             }
+            else ((Router) dev).runRip();
 
             // Read static ACP cache
             if (arpCacheFile != null) {

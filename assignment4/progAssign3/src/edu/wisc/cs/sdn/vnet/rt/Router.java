@@ -8,6 +8,7 @@ import net.floodlightcontroller.packet.*;
 import org.openflow.util.HexString;
 
 import java.nio.ByteBuffer;
+import java.sql.Time;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -20,6 +21,8 @@ public class Router extends Device {
     /**
      * Routing table for the router
      */
+    public static final int multicastIP = IPv4.toIPv4Address("224.0.0.9");
+
     private RouteTable routeTable;
 
     /**
@@ -197,10 +200,15 @@ public class Router extends Device {
         // Reset checksum now that TTL is decremented
         ipPacket.resetChecksum();
 
+        if (ipPacket.getDestinationAddress() == multicastIP)
+            handleRipPacket(etherPacket, inIface);
+
         // Check if packet is destined for one of router's interfaces
         for (Iface iface : this.interfaces.values()) {
             if (ipPacket.getDestinationAddress() == iface.getIpAddress()) {
 //                Destination port unreachable ICMP
+                if (ipPacket.getProtocol() == IPv4.PROTOCOL_UDP && ((UDP) ipPacket.getPayload()).getDestinationPort() == UDP.RIP_PORT)
+                    handleRipPacket(etherPacket, inIface);
                 if (ipPacket.getProtocol() == IPv4.PROTOCOL_TCP || ipPacket.getProtocol() == IPv4.PROTOCOL_UDP) {
                     Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, (byte) 3, (byte) 3, false);
                     if (icmpMessage != null) this.sendPacket(icmpMessage, inIface);
@@ -387,5 +395,106 @@ public class Router extends Device {
         else arp.setTargetProtocolAddress(arpPacket.getSenderProtocolAddress());
 
         return ethernet;
+    }
+
+    public void runRip() {
+        for (Iface iface : interfaces.values()) {
+            int ipAddress = iface.getIpAddress();
+            int subnetMask = iface.getSubnetMask();
+            int subnet = ipAddress & subnetMask;
+            routeTable.insert(subnet, 0, subnetMask, iface, true, 1);
+        }
+
+        sendRipReqest();
+
+        Timer ripTimer = new Timer();
+        ripTimer.scheduleAtFixedRate(new ScheduledRipResponse(), 10000, 10000);
+    }
+
+    public void sendRipReqest() {
+        for (Iface iface : interfaces.values()) {
+            Ethernet ripMessage = getRipMessage(null, iface, true, false);
+            this.sendPacket(ripMessage, iface);
+        }
+    }
+
+    public Ethernet getRipMessage(Ethernet etherPacket, Iface iface, boolean broadcast, boolean reply) {
+        Ethernet ethernet = new Ethernet();
+        IPv4 iPv4 = new IPv4();
+        UDP udp = new UDP();
+        RIPv2 riPv2 = new RIPv2();
+
+        ethernet.setEtherType(Ethernet.TYPE_IPv4);
+        ethernet.setSourceMACAddress(iface.getMacAddress().toBytes());
+        if (broadcast) ethernet.setDestinationMACAddress("FF:FF:FF:FF:FF:FF");
+        else ethernet.setDestinationMACAddress(etherPacket.getSourceMACAddress());
+        ethernet.setPayload(iPv4);
+
+        iPv4.setProtocol(IPv4.PROTOCOL_UDP);
+        iPv4.setTtl((byte) 64);
+        iPv4.setSourceAddress(iface.getIpAddress());
+        if (broadcast) iPv4.setDestinationAddress(multicastIP);
+        else iPv4.setDestinationAddress(((IPv4) etherPacket.getPayload()).getDestinationAddress());
+        iPv4.setPayload(udp);
+
+        udp.setSourcePort(UDP.RIP_PORT);
+        udp.setDestinationPort(UDP.RIP_PORT);
+        udp.setPayload(riPv2);
+
+        if (reply) riPv2.setCommand(RIPv2.COMMAND_RESPONSE);
+        else riPv2.setCommand(RIPv2.COMMAND_REQUEST);
+
+        for (RouteEntry routeEntry : routeTable.getEntries()) {
+            int dstIP = routeEntry.getDestinationAddress();
+            int mask = routeEntry.getMaskAddress();
+            int metric = routeEntry.getMetric();
+
+            RIPv2Entry ripEntry = new RIPv2Entry(dstIP, mask, metric);
+            ripEntry.setNextHopAddress(iface.getIpAddress());
+            riPv2.addEntry(ripEntry);
+        }
+
+        udp.resetChecksum();
+        udp.serialize();
+
+        return ethernet;
+    }
+
+    private void handleRipPacket(Ethernet etherPacket, Iface inIface) {
+        IPv4 ipPacket = (IPv4) etherPacket.getPayload();
+        UDP udpPacket = (UDP) ipPacket.getPayload();
+
+        if (!(udpPacket.getPayload() instanceof RIPv2)) {
+            System.out.println("Get non RIP packet from the reserved port");
+            return;
+        }
+
+        RIPv2 ripPacket = (RIPv2) udpPacket.getPayload();
+        for (RIPv2Entry entry : ripPacket.getEntries()) {
+            int dstIP = entry.getAddress();
+            int nextHop = entry.getNextHopAddress();
+            int subnetMask = entry.getSubnetMask();
+            int metric = entry.getMetric();
+            if ((dstIP & subnetMask) == (inIface.getIpAddress() & inIface.getSubnetMask())) continue;
+
+            RouteEntry dstEntry = routeTable.lookup(dstIP);
+            RouteEntry nextHopEntry = routeTable.lookup(nextHop);
+            int nextHopMetric = nextHopEntry.getMetric();
+            int cost = nextHopMetric + metric;
+
+            if (dstEntry == null) routeTable.insert(dstIP, nextHop, subnetMask, inIface, false, cost);
+            else if (cost <= dstEntry.getMetric())
+                routeTable.update(dstIP, subnetMask, nextHop, inIface, cost);
+        }
+    }
+
+    private class ScheduledRipResponse extends TimerTask {
+        @Override
+        public void run() {
+            for (Iface iface : interfaces.values()) {
+                Ethernet ripMessage = getRipMessage(null, iface, true, false);
+                sendPacket(ripMessage, iface);
+            }
+        }
     }
 }

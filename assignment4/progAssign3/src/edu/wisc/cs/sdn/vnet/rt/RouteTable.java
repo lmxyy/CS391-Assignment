@@ -178,18 +178,37 @@ public class RouteTable {
      */
     public void insert(int dstIp, int gwIp, int maskIp, Iface iface) {
         RouteEntry entry = new RouteEntry(dstIp, gwIp, maskIp, iface);
+        entry.setParent(this);
         synchronized (this.entries) {
             this.entries.add(entry);
         }
     }
 
-    /**
-     * Remove an entry from the route table.
-     *
-     * @param dstIP  destination IP of the entry to remove
-     * @param maskIp subnet mask of the entry to remove
-     * @return true if a matching entry was found and removed, otherwise false
-     */
+    public void insert(int dstIp, int gwIp, int maskIp, Iface iface, int cost) {
+        RouteEntry entry = new RouteEntry(dstIp, gwIp, maskIp, iface);
+        entry.setParent(this);
+        entry.setMetric(cost);
+        synchronized (this.entries) {
+            this.entries.add(entry);
+        }
+    }
+
+    public void insert(int dstIp, int gwIp, int maskIp, Iface iface, boolean direct,int cost) {
+        RouteEntry entry = new RouteEntry(dstIp, gwIp, maskIp, iface, direct);
+        entry.setParent(this);
+        entry.setMetric(cost);
+        synchronized (this.entries) {
+            this.entries.add(entry);
+        }
+    }
+
+//    /**
+//     * Remove an entry from the route table.
+//     *
+//     * @param dstIP  destination IP of the entry to remove
+//     * @param maskIp subnet mask of the entry to remove
+//     * @return true if a matching entry was found and removed, otherwise false
+//     */
     public boolean remove(int dstIp, int maskIp) {
         synchronized (this.entries) {
             RouteEntry entry = this.find(dstIp, maskIp);
@@ -201,35 +220,36 @@ public class RouteTable {
         return true;
     }
 
-    /**
-     * Update an entry in the route table.
-     *
-     * @param dstIP          destination IP of the entry to update
-     * @param maskIp         subnet mask of the entry to update
-     * @param gatewayAddress new gateway IP address for matching entry
-     * @param iface          new router interface for matching entry
-     * @return true if a matching entry was found and updated, otherwise false
-     */
-    public boolean update(int dstIp, int maskIp, int gwIp,
-                          Iface iface) {
+//    /**
+//     * Update an entry in the route table.
+//     *
+//     * @param dstIP          destination IP of the entry to update
+//     * @param maskIp         subnet mask of the entry to update
+//     * @param gatewayAddress new gateway IP address for matching entry
+//     * @param iface          new router interface for matching entry
+//     * @return true if a matching entry was found and updated, otherwise false
+//     */
+    public boolean update(int dstIp, int maskIp, int gwIp, Iface iface, int cost) {
         synchronized (this.entries) {
             RouteEntry entry = this.find(dstIp, maskIp);
             if (null == entry) {
                 return false;
             }
+            entry.resetTimer();
             entry.setGatewayAddress(gwIp);
             entry.setInterface(iface);
+            entry.setMetric(cost);
         }
         return true;
     }
 
-    /**
-     * Find an entry in the route table.
-     *
-     * @param dstIP  destination IP of the entry to find
-     * @param maskIp subnet mask of the entry to find
-     * @return a matching entry if one was found, otherwise null
-     */
+//    /**
+//     * Find an entry in the route table.
+//     *
+//     * @param dstIP  destination IP of the entry to find
+//     * @param maskIp subnet mask of the entry to find
+//     * @return a matching entry if one was found, otherwise null
+//     */
     private RouteEntry find(int dstIp, int maskIp) {
         synchronized (this.entries) {
             for (RouteEntry entry : this.entries) {
@@ -254,5 +274,9 @@ public class RouteTable {
             }
             return result;
         }
+    }
+
+    public List<RouteEntry> getEntries() {
+        return entries;
     }
 }
