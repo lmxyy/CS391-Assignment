@@ -7,6 +7,7 @@ import edu.wisc.cs.sdn.vnet.Iface;
 import net.floodlightcontroller.packet.*;
 import org.openflow.util.HexString;
 
+import java.awt.desktop.SystemEventListener;
 import java.nio.ByteBuffer;
 import java.sql.Time;
 import java.util.*;
@@ -490,6 +491,7 @@ public class Router extends Device {
             if (dstEntry == null) routeTable.insert(dstIP, nextHop, subnetMask, inIface, false, cost);
             else if (cost <= dstEntry.getMetric())
                 routeTable.update(dstIP, subnetMask, nextHop, inIface, cost);
+            System.err.println("@@@@"+routeTable.lookup(IPv4.toIPv4Address("10.0.3.103")));
         }
     }
 
