@@ -66,6 +66,7 @@ public class Router extends Device {
 
         public void run() {
             for (int i = 0; i < 3; ++i) {
+                System.err.println(nextHop);
                 Ethernet arpMessage = getArpMessage(etherPacket, outIface, nextHop);
                 sendPacket(etherPacket, outIface);
                 try {
