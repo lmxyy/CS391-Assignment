@@ -324,6 +324,7 @@ public class Router extends Device {
 //                }
 //                mapQueues.get().get(nextHop).add(new PacketIface(ethernet, inIface, inIface));
 //            } else ethernet.setDestinationMACAddress(arpEntry.getMac().toBytes());
+            System.err.println("**********"+((Ethernet) ipPacket.getParent()).getSourceMAC().toString());
             ethernet.setDestinationMACAddress(((Ethernet) ipPacket.getParent()).getSourceMACAddress());
         }
         ethernet.setPayload(iPv4);
