@@ -66,7 +66,6 @@ public class Router extends Device {
 
         public void run() {
             for (int i = 0; i < 3; ++i) {
-                System.err.println(nextHop);
                 Ethernet arpMessage = getArpMessage(etherPacket, outIface, nextHop);
                 sendPacket(etherPacket, outIface);
                 try {
@@ -79,7 +78,6 @@ public class Router extends Device {
             }
             Queue<PacketIface> queue = mapQueues.get().get(nextHop);
             if (queue == null) return;
-//            queue.forEach(packetIface -> packetIface.sendIcmpMessage((byte) 3, (byte) 1, false));
             for (PacketIface packetIface : queue) {
                 packetIface.sendIcmpMessage((byte) 3, (byte) 1, false);
             }
@@ -260,14 +258,12 @@ public class Router extends Device {
         }
 
         // Set destination MAC address in Ethernet header
-        System.err.println("heiheihei.");
         ArpEntry arpEntry = this.arpCache.get().lookup(nextHop);
         if (null == arpEntry) {
             System.err.println("null arp entry.");
             Thread thread = null;
             if (!mapQueues.get().containsKey(nextHop)) {
                 mapQueues.get().put(nextHop, new LinkedBlockingQueue<PacketIface>());
-                System.err.println("###" + nextHop);
                 WaitArpReply waitArpReply = new WaitArpReply(etherPacket, outIface, nextHop, mapQueues);
                 thread = new Thread(waitArpReply);
             }
@@ -303,7 +299,6 @@ public class Router extends Device {
             if (arpEntry == null) {
                 if (!mapQueues.get().containsKey(nextHop)) {
                     mapQueues.get().put(nextHop, new LinkedBlockingQueue<PacketIface>());
-                    System.err.println("!!!" + nextHop);
                     WaitArpReply waitArpReply = new WaitArpReply(ethernet, inIface, nextHop, mapQueues);
                     thread = new Thread(waitArpReply);
                 }
