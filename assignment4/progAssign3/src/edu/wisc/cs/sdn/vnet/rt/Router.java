@@ -286,8 +286,24 @@ public class Router extends Device {
 
         ethernet.setEtherType(Ethernet.TYPE_IPv4);
         ethernet.setSourceMACAddress(inIface.getMacAddress().toBytes());
-        System.err.println(arpCache.get().lookup(ipPacket.getSourceAddress()));
-        ethernet.setDestinationMACAddress(arpCache.get().lookup(ipPacket.getSourceAddress()).getMac().toBytes());
+//        System.err.println(arpCache.get().lookup(ipPacket.getSourceAddress()));
+        ArpEntry arpEntry = arpCache.get().lookup(ipPacket.getSourceAddress());
+        if (arpEntry != null) {
+            ethernet.setDestinationMACAddress(arpEntry.getMac().toBytes());
+        } else {
+            RouteEntry routeEntry = routeTable.lookup(ipPacket.getSourceAddress());
+            int nextHop = 0;
+            if (routeEntry.getGatewayAddress() == 0)
+                nextHop = routeEntry.getGatewayAddress();
+            else nextHop = ipPacket.getSourceAddress();
+            arpEntry = arpCache.get().lookup(nextHop);
+            if (arpEntry == null) {
+                if (!mapQueues.get().containsKey(nextHop)) {
+                    mapQueues.get().put(nextHop, new LinkedBlockingQueue<PacketIface>());
+                }
+                mapQueues.get().get(nextHop).add(new PacketIface(ethernet, inIface, inIface));
+            } else ethernet.setDestinationMACAddress(arpEntry.getMac().toBytes());
+        }
         ethernet.setPayload(iPv4);
 
         iPv4.setTtl((byte) 64);
