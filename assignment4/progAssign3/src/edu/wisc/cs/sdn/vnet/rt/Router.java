@@ -244,8 +244,6 @@ public class Router extends Device {
         // If no entry matched, do nothing
         if (null == bestMatch) {
 //            Destination net unreachable ICMP
-
-            System.err.println("#####" + HexString.toHexString(dstAddr)+""+dstAddr);
             Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, (byte) 3, (byte) 0, false);
             if (icmpMessage != null) this.sendPacket(icmpMessage, inIface);
             return;
@@ -486,13 +484,11 @@ public class Router extends Device {
             int nextHopMetric = nextHopEntry.getMetric();
             int cost = nextHopMetric + metric;
 
-            System.err.println("!!!!" + HexString.toHexString(dstIP) + "\t" + HexString.toHexString(subnetMask));
 
             if (dstEntry == null) routeTable.insert(dstIP, nextHop, subnetMask, inIface, false, cost);
             else if (cost <= dstEntry.getMetric())
                 routeTable.update(dstIP, subnetMask, nextHop, inIface, cost);
         }
-        System.err.println("@@@@"+routeTable.lookup(167773031));
     }
 
     private class ScheduledRipResponse extends TimerTask {
