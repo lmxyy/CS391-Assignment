@@ -260,7 +260,6 @@ public class Router extends Device {
         // Set destination MAC address in Ethernet header
         ArpEntry arpEntry = this.arpCache.get().lookup(nextHop);
         if (null == arpEntry) {
-            System.err.println("null arp entry.");
             Thread thread = null;
             if (!mapQueues.get().containsKey(nextHop)) {
                 mapQueues.get().put(nextHop, new LinkedBlockingQueue<PacketIface>());
