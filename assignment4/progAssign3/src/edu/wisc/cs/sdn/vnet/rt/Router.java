@@ -206,6 +206,9 @@ public class Router extends Device {
 
         // Check if packet is destined for one of router's interfaces
         for (Iface iface : this.interfaces.values()) {
+            System.err.println("aaaaaaaaaaa"+(ipPacket.getProtocol() == IPv4.PROTOCOL_ICMP));
+            System.err.println("bbbbbbbbbbb"+(((ICMP) ipPacket.getPayload()).getIcmpType() == 8));
+            System.err.println("ccccccccccc"+iface.getIpAddress()+" "+ipPacket.getDestinationAddress());
             if (ipPacket.getDestinationAddress() == iface.getIpAddress()) {
 //                Destination port unreachable ICMP
                 if (ipPacket.getProtocol() == IPv4.PROTOCOL_UDP && ((UDP) ipPacket.getPayload()).getDestinationPort() == UDP.RIP_PORT)
@@ -214,6 +217,8 @@ public class Router extends Device {
                     Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, (byte) 3, (byte) 3, false);
                     if (icmpMessage != null) this.sendPacket(icmpMessage, inIface);
                 } else if (ipPacket.getProtocol() == IPv4.PROTOCOL_ICMP && ((ICMP) ipPacket.getPayload()).getIcmpType() == 8) {
+//                    echo ICMP
+                    System.err.println("lalalalala");
                     Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, (byte) 0, (byte) 0, true);
                     if (icmpMessage != null) this.sendPacket(icmpMessage, inIface);
                 }

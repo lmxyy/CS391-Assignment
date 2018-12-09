@@ -137,7 +137,7 @@ public class RouteEntry {
         public void run() {
             timer.cancel();
             timer.purge();
-//            parent.remove(destinationAddress, maskAddress);
+            parent.remove(destinationAddress, maskAddress);
         }
     }
 
@@ -145,6 +145,6 @@ public class RouteEntry {
         timer.cancel();
         timer.purge();
         timer = new Timer();
-        timer.scheduleAtFixedRate(new RemoveTimeout(),0,30000);
+        timer.scheduleAtFixedRate(new RemoveTimeout(),30000,30000);
     }
 }
