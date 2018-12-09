@@ -49,6 +49,7 @@ public class Router extends Device {
         }
 
         public void sendIpPacket(MACAddress mac) {
+            System.err.println("&&&&&&&&&&&&&&&&&&"+mac.toString());
             Ethernet etherPacket = (Ethernet) packet;
             etherPacket.setDestinationMACAddress(mac.toBytes());
             sendPacket(etherPacket, outIface);
