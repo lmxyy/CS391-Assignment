@@ -267,6 +267,7 @@ public class Router extends Device {
             Thread thread = null;
             if (!mapQueues.get().containsKey(nextHop)) {
                 mapQueues.get().put(nextHop, new LinkedBlockingQueue<PacketIface>());
+                System.err.println("###" + nextHop);
                 WaitArpReply waitArpReply = new WaitArpReply(etherPacket, outIface, nextHop, mapQueues);
                 thread = new Thread(waitArpReply);
             }
@@ -302,6 +303,7 @@ public class Router extends Device {
             if (arpEntry == null) {
                 if (!mapQueues.get().containsKey(nextHop)) {
                     mapQueues.get().put(nextHop, new LinkedBlockingQueue<PacketIface>());
+                    System.err.println("!!!" + nextHop);
                     WaitArpReply waitArpReply = new WaitArpReply(ethernet, inIface, nextHop, mapQueues);
                     thread = new Thread(waitArpReply);
                 }
