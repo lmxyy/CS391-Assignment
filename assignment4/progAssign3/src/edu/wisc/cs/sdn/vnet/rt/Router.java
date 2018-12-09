@@ -312,7 +312,7 @@ public class Router extends Device {
             else nextHop = ipPacket.getSourceAddress();
             arpEntry = arpCache.get().lookup(nextHop);
             if (arpEntry == null) {
-                System.err.println("$$$$$$$$$$"+nextHop);
+                System.err.println("$$$$$$$$$$"+HexString.toHexString(nextHop));
                 if (!mapQueues.get().containsKey(nextHop)) {
                     mapQueues.get().put(nextHop, new LinkedBlockingQueue<PacketIface>());
                     WaitArpReply waitArpReply = new WaitArpReply(ethernet, inIface, nextHop, mapQueues);
