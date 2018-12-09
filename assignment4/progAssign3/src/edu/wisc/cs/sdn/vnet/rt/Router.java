@@ -93,8 +93,8 @@ public class Router extends Device {
     public Router(String host, DumpFile logfile) {
         super(host, logfile);
         this.routeTable = new RouteTable();
-        this.arpCache = new AtomicReference<>(new ArpCache());
-        this.mapQueues = new AtomicReference<>(new HashMap<Integer, Queue<PacketIface>>());
+        this.arpCache = new AtomicReference<ArpCache>(new ArpCache());
+        this.mapQueues = new AtomicReference<Map<Integer, Queue<PacketIface>>>(new HashMap<Integer, Queue<PacketIface>>());
     }
 
     /**
