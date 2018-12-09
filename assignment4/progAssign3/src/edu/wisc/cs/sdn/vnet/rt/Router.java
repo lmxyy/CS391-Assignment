@@ -341,7 +341,8 @@ public class Router extends Device {
     }
 
     private Ethernet getArpMessage(Ethernet etherPacket, Iface iface, int ip) {
-        ARP arpPacket = (ARP) etherPacket.getPayload();
+        ARP arpPacket = null;
+        if (ip == 0) arpPacket = (ARP) etherPacket.getPayload();
 
         Ethernet ethernet = new Ethernet();
         ARP arp = new ARP();
