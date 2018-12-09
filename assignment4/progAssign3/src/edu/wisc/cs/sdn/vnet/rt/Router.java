@@ -222,12 +222,14 @@ public class Router extends Device {
             return;
         }
         System.out.println("Forward IP packet");
+        System.err.println("heiheihei.");
 
         // Get IP header
         IPv4 ipPacket = (IPv4) etherPacket.getPayload();
         int dstAddr = ipPacket.getDestinationAddress();
 
-        // Find matching route table entry 
+        // Find matching route table entry
+        System.err.println("heiheihei.");
         RouteEntry bestMatch = this.routeTable.lookup(dstAddr);
         System.err.println("heiheihei.");
 
