@@ -208,7 +208,7 @@ public class Router extends Device {
         for (Iface iface : this.interfaces.values()) {
             System.err.println("aaaaaaaaaaa"+(ipPacket.getProtocol() == IPv4.PROTOCOL_ICMP));
 //            System.err.println("bbbbbbbbbbb"+(((ICMP) ipPacket.getPayload()).getIcmpType() == 8));
-            System.err.println("ccccccccccc"+iface.getIpAddress()+" "+ipPacket.getDestinationAddress());
+            System.err.println("ccccccccccc"+HexString.toHexString(iface.getIpAddress())+" "+HexString.toHexString(ipPacket.getDestinationAddress()));
             if (ipPacket.getDestinationAddress() == iface.getIpAddress()) {
 //                Destination port unreachable ICMP
                 if (ipPacket.getProtocol() == IPv4.PROTOCOL_UDP && ((UDP) ipPacket.getPayload()).getDestinationPort() == UDP.RIP_PORT)
