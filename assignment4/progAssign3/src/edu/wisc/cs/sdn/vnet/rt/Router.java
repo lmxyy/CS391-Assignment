@@ -39,8 +39,6 @@ public class Router extends Device {
         }
 
         public void sendIcmpMessage(byte type, byte code, boolean echo) {
-            System.err.println("##############################");
-            System.err.println("Send destination host unreachable icmp");
             IPv4 ipPacket = (IPv4) packet.getPayload();
             Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, type, code, false);
             if (icmpMessage != null) {
@@ -49,11 +47,7 @@ public class Router extends Device {
         }
 
         public void sendIpPacket(MACAddress mac) {
-            System.err.println("&&&&&&&&&&&&&&&&&&" + mac.toString() + " " + outIface.getMacAddress().toString());
             Ethernet etherPacket = (Ethernet) packet;
-            System.err.println("&&&&&&&&&&&&&&&&&&" + mac.toString() + " " + etherPacket.getSourceMAC().toString());
-            System.err.println("&&&&&&&&&&&&&&&&&&" + HexString.toHexString(((IPv4) etherPacket.getPayload()).getDestinationAddress()));
-            System.err.println("&&&&&&&&&&&&&&&&&&" + HexString.toHexString(((IPv4) etherPacket.getPayload()).getSourceAddress()));
             etherPacket.setDestinationMACAddress(mac.toBytes());
             sendPacket(etherPacket, outIface);
         }
@@ -316,7 +310,6 @@ public class Router extends Device {
             else nextHop = ipPacket.getSourceAddress();
             arpEntry = arpCache.get().lookup(nextHop);
             if (arpEntry == null) {
-                System.err.println("$$$$$$$$$$" + HexString.toHexString(nextHop));
                 if (!mapQueues.get().containsKey(nextHop)) {
                     mapQueues.get().put(nextHop, new LinkedBlockingQueue<PacketIface>());
                     WaitArpReply waitArpReply = new WaitArpReply(ethernet, inIface, nextHop, mapQueues);
@@ -366,14 +359,12 @@ public class Router extends Device {
                 this.sendPacket(arpMessage, inIface);
             }
         } else if (arpPacket.getOpCode() == ARP.OP_REPLY) {
-            System.err.println("!!!!!!!!!!!!!ARP reply");
             int senderIp = ByteBuffer.wrap(arpPacket.getSenderProtocolAddress()).getInt();
             MACAddress senderMac = MACAddress.valueOf(arpPacket.getSenderHardwareAddress());
             arpCache.get().insert(senderMac, senderIp);
             Queue<PacketIface> queue = mapQueues.get().get(senderIp);
             mapQueues.get().remove(senderIp);
             if (queue == null) return;
-            System.err.println("^^^^^^^^^^^^^^^^" + HexString.toHexString(senderIp));
             for (PacketIface packetIface : queue) {
                 packetIface.sendIpPacket(senderMac);
             }
