@@ -9,6 +9,7 @@ import org.openflow.util.HexString;
 
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -201,7 +202,6 @@ public class Router extends Device {
             if (ipPacket.getDestinationAddress() == iface.getIpAddress()) {
 //                Destination port unreachable ICMP
                 if (ipPacket.getProtocol() == IPv4.PROTOCOL_TCP || ipPacket.getProtocol() == IPv4.PROTOCOL_UDP) {
-                    System.err.println("heiheihei");
                     Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, (byte) 3, (byte) 3, false);
                     this.sendPacket(icmpMessage, inIface);
                 } else if (ipPacket.getProtocol() == IPv4.PROTOCOL_ICMP && ((ICMP) ipPacket.getPayload()).getIcmpType() == 8) {
@@ -260,7 +260,7 @@ public class Router extends Device {
         if (null == arpEntry) {
             Thread thread = null;
             if (!mapQueues.get().containsKey(nextHop)) {
-                mapQueues.get().put(nextHop, new LinkedList<>());
+                mapQueues.get().put(nextHop, new LinkedBlockingQueue<>());
                 WaitArpReply waitArpReply = new WaitArpReply(etherPacket, outIface, nextHop, mapQueues);
                 thread = new Thread(waitArpReply);
             }
