@@ -362,6 +362,7 @@ public class Router extends Device {
                 this.sendPacket(arpMessage, inIface);
             }
         } else if (arpPacket.getOpCode() == ARP.OP_REPLY) {
+            System.err.println("!!!!!!!!!!!!!ARP reply");
             int senderIp = ByteBuffer.wrap(arpPacket.getSenderProtocolAddress()).getInt();
             MACAddress senderMac = MACAddress.valueOf(arpPacket.getSenderHardwareAddress());
             arpCache.get().insert(senderMac, senderIp);
