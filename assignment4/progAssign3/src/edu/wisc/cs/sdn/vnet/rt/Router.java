@@ -369,6 +369,7 @@ public class Router extends Device {
             Queue<PacketIface> queue = mapQueues.get().get(senderIp);
             mapQueues.get().remove(senderIp);
             if (queue == null) return;
+            System.err.println("^^^^^^^^^^^^^^^^"+HexString.toHexString(senderIp));
             for (PacketIface packetIface : queue) {
                 packetIface.sendIpPacket(senderMac);
             }
