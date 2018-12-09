@@ -38,7 +38,7 @@ public class Router extends Device {
         public void sendIcmpMessage(byte type, byte code, boolean echo) {
             IPv4 ipPacket = (IPv4) packet.getPayload();
             Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, (byte) 3, (byte) 1, false);
-            sendPacket(icmpMessage, inIface);
+            if (icmpMessage != null) sendPacket(icmpMessage, inIface);
         }
 
         public void sendIpPacket(MACAddress mac) {
@@ -191,7 +191,7 @@ public class Router extends Device {
         if (0 == ipPacket.getTtl()) {
 //            Time Exceeded ICMP
             Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, (byte) 11, (byte) 0, false);
-            this.sendPacket(icmpMessage, inIface);
+            if (icmpMessage != null) this.sendPacket(icmpMessage, inIface);
             return;
         }
 
@@ -204,10 +204,10 @@ public class Router extends Device {
 //                Destination port unreachable ICMP
                 if (ipPacket.getProtocol() == IPv4.PROTOCOL_TCP || ipPacket.getProtocol() == IPv4.PROTOCOL_UDP) {
                     Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, (byte) 3, (byte) 3, false);
-                    this.sendPacket(icmpMessage, inIface);
+                    if (icmpMessage != null) this.sendPacket(icmpMessage, inIface);
                 } else if (ipPacket.getProtocol() == IPv4.PROTOCOL_ICMP && ((ICMP) ipPacket.getPayload()).getIcmpType() == 8) {
                     Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, (byte) 0, (byte) 0, true);
-                    this.sendPacket(icmpMessage, inIface);
+                    if (icmpMessage != null) this.sendPacket(icmpMessage, inIface);
                 }
                 return;
             }
@@ -237,7 +237,7 @@ public class Router extends Device {
         if (null == bestMatch) {
 //            Destination net unreachable ICMP
             Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, (byte) 3, (byte) 0, false);
-            this.sendPacket(icmpMessage, inIface);
+            if (icmpMessage != null) this.sendPacket(icmpMessage, inIface);
             return;
         }
 
@@ -279,6 +279,8 @@ public class Router extends Device {
     }
 
     private Ethernet getIcmpMessage(Iface inIface, IPv4 ipPacket, byte type, byte code, boolean echo) {
+        Thread thread = null;
+
         Ethernet ethernet = new Ethernet();
         IPv4 iPv4 = new IPv4();
         ICMP icmp = new ICMP();
@@ -286,7 +288,6 @@ public class Router extends Device {
 
         ethernet.setEtherType(Ethernet.TYPE_IPv4);
         ethernet.setSourceMACAddress(inIface.getMacAddress().toBytes());
-//        System.err.println(arpCache.get().lookup(ipPacket.getSourceAddress()));
         ArpEntry arpEntry = arpCache.get().lookup(ipPacket.getSourceAddress());
         if (arpEntry != null) {
             ethernet.setDestinationMACAddress(arpEntry.getMac().toBytes());
@@ -300,6 +301,8 @@ public class Router extends Device {
             if (arpEntry == null) {
                 if (!mapQueues.get().containsKey(nextHop)) {
                     mapQueues.get().put(nextHop, new LinkedBlockingQueue<PacketIface>());
+                    WaitArpReply waitArpReply = new WaitArpReply(ethernet, inIface, nextHop, mapQueues);
+                    thread = new Thread(waitArpReply);
                 }
                 mapQueues.get().get(nextHop).add(new PacketIface(ethernet, inIface, inIface));
             } else ethernet.setDestinationMACAddress(arpEntry.getMac().toBytes());
@@ -328,7 +331,11 @@ public class Router extends Device {
             byteBuffer.rewind();
             data.setData(dataBytes);
         }
-        return ethernet;
+        if (thread == null) return ethernet;
+        else {
+            thread.start();
+            return null;
+        }
     }
 
     private void handleArpPacket(Ethernet etherPacket, Iface inIface) {
@@ -347,7 +354,6 @@ public class Router extends Device {
             Queue<PacketIface> queue = mapQueues.get().get(senderIp);
             mapQueues.get().remove(senderIp);
             if (queue == null) return;
-//            queue.forEach(packetIface -> packetIface.sendIpPacket(senderMac));
             for (PacketIface packetIface : queue) {
                 packetIface.sendIpPacket(senderMac);
             }
