@@ -244,6 +244,7 @@ public class Router extends Device {
         // If no entry matched, do nothing
         if (null == bestMatch) {
 //            Destination net unreachable ICMP
+            System.err.println("#####" + HexString.toHexString(dstAddr));
             Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, (byte) 3, (byte) 0, false);
             if (icmpMessage != null) this.sendPacket(icmpMessage, inIface);
             return;
@@ -483,6 +484,8 @@ public class Router extends Device {
             RouteEntry nextHopEntry = routeTable.lookup(nextHop);
             int nextHopMetric = nextHopEntry.getMetric();
             int cost = nextHopMetric + metric;
+
+            System.err.println("!!!!" + HexString.toHexString(dstIP) + "\t" + HexString.toHexString(subnetMask));
 
             if (dstEntry == null) routeTable.insert(dstIP, nextHop, subnetMask, inIface, false, cost);
             else if (cost <= dstEntry.getMetric())
