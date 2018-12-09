@@ -49,8 +49,11 @@ public class Router extends Device {
         }
 
         public void sendIpPacket(MACAddress mac) {
-            System.err.println("&&&&&&&&&&&&&&&&&&"+mac.toString()+" "+outIface.getMacAddress().toString());
+            System.err.println("&&&&&&&&&&&&&&&&&&" + mac.toString() + " " + outIface.getMacAddress().toString());
             Ethernet etherPacket = (Ethernet) packet;
+            System.err.println("&&&&&&&&&&&&&&&&&&" + mac.toString() + " " + etherPacket.getSourceMAC().toString());
+            System.err.println("&&&&&&&&&&&&&&&&&&" + HexString.toHexString(((IPv4) etherPacket.getPayload()).getDestinationAddress()));
+            System.err.println("&&&&&&&&&&&&&&&&&&" + HexString.toHexString(((IPv4) etherPacket.getPayload()).getSourceAddress()));
             etherPacket.setDestinationMACAddress(mac.toBytes());
             sendPacket(etherPacket, outIface);
         }
@@ -313,7 +316,7 @@ public class Router extends Device {
             else nextHop = ipPacket.getSourceAddress();
             arpEntry = arpCache.get().lookup(nextHop);
             if (arpEntry == null) {
-                System.err.println("$$$$$$$$$$"+HexString.toHexString(nextHop));
+                System.err.println("$$$$$$$$$$" + HexString.toHexString(nextHop));
                 if (!mapQueues.get().containsKey(nextHop)) {
                     mapQueues.get().put(nextHop, new LinkedBlockingQueue<PacketIface>());
                     WaitArpReply waitArpReply = new WaitArpReply(ethernet, inIface, nextHop, mapQueues);
@@ -370,7 +373,7 @@ public class Router extends Device {
             Queue<PacketIface> queue = mapQueues.get().get(senderIp);
             mapQueues.get().remove(senderIp);
             if (queue == null) return;
-            System.err.println("^^^^^^^^^^^^^^^^"+HexString.toHexString(senderIp));
+            System.err.println("^^^^^^^^^^^^^^^^" + HexString.toHexString(senderIp));
             for (PacketIface packetIface : queue) {
                 packetIface.sendIpPacket(senderMac);
             }
