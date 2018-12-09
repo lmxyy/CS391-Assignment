@@ -200,8 +200,8 @@ public class Router extends Device {
         // Reset checksum now that TTL is decremented
         ipPacket.resetChecksum();
 
+        System.err.println(HexString.toHexString(ipPacket.getDestinationAddress()));
         if (ipPacket.getDestinationAddress() == multicastIP) {
-            System.err.println("multicastIP");
             handleRipPacket(etherPacket, inIface);
         }
 
