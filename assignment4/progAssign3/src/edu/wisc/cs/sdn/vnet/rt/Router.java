@@ -76,7 +76,10 @@ public class Router extends Device {
             }
             Queue<PacketIface> queue = mapQueues.get().get(nextHop);
             if (queue == null) return;
-            queue.forEach(packetIface -> packetIface.sendIcmpMessage((byte) 3, (byte) 1, false));
+//            queue.forEach(packetIface -> packetIface.sendIcmpMessage((byte) 3, (byte) 1, false));
+            for (PacketIface packetIface : queue) {
+                packetIface.sendIcmpMessage((byte) 3, (byte) 1, false);
+            }
         }
     }
 
@@ -322,7 +325,10 @@ public class Router extends Device {
             Queue<PacketIface> queue = mapQueues.get().get(senderIp);
             mapQueues.get().remove(senderIp);
             if (queue == null) return;
-            queue.forEach(packetIface -> packetIface.sendIpPacket(senderMac));
+//            queue.forEach(packetIface -> packetIface.sendIpPacket(senderMac));
+            for (PacketIface packetIface : queue) {
+                packetIface.sendIpPacket(senderMac);
+            }
         } else {
             System.err.println("Unknown ARP packet OP code.");
             return;
