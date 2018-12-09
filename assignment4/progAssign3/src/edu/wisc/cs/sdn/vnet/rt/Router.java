@@ -201,9 +201,8 @@ public class Router extends Device {
         ipPacket.resetChecksum();
 
         System.err.println(HexString.toHexString(ipPacket.getDestinationAddress()));
-        if (ipPacket.getDestinationAddress() == multicastIP) {
+        if (ipPacket.getDestinationAddress() == multicastIP)
             handleRipPacket(etherPacket, inIface);
-        }
 
         // Check if packet is destined for one of router's interfaces
         for (Iface iface : this.interfaces.values()) {
