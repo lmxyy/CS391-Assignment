@@ -425,7 +425,7 @@ public class Router extends Device {
         RIPv2 riPv2 = new RIPv2();
 
         ethernet.setEtherType(Ethernet.TYPE_IPv4);
-        System.err.println(iface.getMacAddress().toString());
+        System.err.println(iface.getMacAddress());
         ethernet.setSourceMACAddress(iface.getMacAddress().toBytes());
         if (broadcast) ethernet.setDestinationMACAddress("FF:FF:FF:FF:FF:FF");
         else ethernet.setDestinationMACAddress(etherPacket.getSourceMACAddress());
