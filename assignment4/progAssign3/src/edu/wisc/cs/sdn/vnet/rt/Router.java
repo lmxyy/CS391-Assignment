@@ -492,7 +492,7 @@ public class Router extends Device {
             else if (cost <= dstEntry.getMetric())
                 routeTable.update(dstIP, subnetMask, nextHop, inIface, cost);
         }
-        System.err.println("@@@@"+routeTable.lookup(IPv4.toIPv4Address("10.0.3.103")));
+        System.err.println("@@@@"+routeTable.lookup(167773031));
     }
 
     private class ScheduledRipResponse extends TimerTask {
