@@ -244,7 +244,8 @@ public class Router extends Device {
         // If no entry matched, do nothing
         if (null == bestMatch) {
 //            Destination net unreachable ICMP
-            System.err.println("#####" + HexString.toHexString(dstAddr));
+
+            System.err.println("#####" + HexString.toHexString(dstAddr)+""+dstAddr);
             Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, (byte) 3, (byte) 0, false);
             if (icmpMessage != null) this.sendPacket(icmpMessage, inIface);
             return;
