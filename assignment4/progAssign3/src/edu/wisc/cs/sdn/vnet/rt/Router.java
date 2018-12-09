@@ -43,8 +43,9 @@ public class Router extends Device {
             System.err.println("Send destination host unreachable icmp");
             IPv4 ipPacket = (IPv4) packet.getPayload();
             Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, type, code, false);
-            System.err.println(HexString.toHexString(icmpMessage.getDestinationMACAddress()));
-            if (icmpMessage != null) sendPacket(icmpMessage, inIface);
+            if (icmpMessage != null) {
+                sendPacket(icmpMessage, inIface);
+            }
         }
 
         public void sendIpPacket(MACAddress mac) {
