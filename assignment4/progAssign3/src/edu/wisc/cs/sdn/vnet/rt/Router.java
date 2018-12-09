@@ -476,6 +476,7 @@ public class Router extends Device {
             int nextHop = entry.getNextHopAddress();
             int subnetMask = entry.getSubnetMask();
             int metric = entry.getMetric();
+            System.err.println(HexString.toHexString(dstIP));
             if ((dstIP & subnetMask) == (inIface.getIpAddress() & inIface.getSubnetMask())) continue;
 
             RouteEntry dstEntry = routeTable.lookup(dstIP);
