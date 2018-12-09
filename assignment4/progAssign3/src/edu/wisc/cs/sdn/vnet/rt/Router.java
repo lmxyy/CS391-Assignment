@@ -286,7 +286,7 @@ public class Router extends Device {
 
         ethernet.setEtherType(Ethernet.TYPE_IPv4);
         ethernet.setSourceMACAddress(inIface.getMacAddress().toBytes());
-        System.err.println(arpCache.get().lookup(ipPacket.getSourceAddress()).getMac().toString());
+        System.err.println(arpCache.get().lookup(ipPacket.getSourceAddress()));
         ethernet.setDestinationMACAddress(arpCache.get().lookup(ipPacket.getSourceAddress()).getMac().toBytes());
         ethernet.setPayload(iPv4);
 
