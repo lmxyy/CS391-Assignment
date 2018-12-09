@@ -39,8 +39,11 @@ public class Router extends Device {
         }
 
         public void sendIcmpMessage(byte type, byte code, boolean echo) {
+            System.err.println("##############################");
+            System.err.println("Send destination host unreachable icmp");
             IPv4 ipPacket = (IPv4) packet.getPayload();
             Ethernet icmpMessage = getIcmpMessage(inIface, ipPacket, type, code, false);
+            System.err.println(HexString.toHexString(icmpMessage.getDestinationMACAddress()));
             if (icmpMessage != null) sendPacket(icmpMessage, inIface);
         }
 
@@ -83,7 +86,6 @@ public class Router extends Device {
             if (queue == null) return;
             for (PacketIface packetIface : queue) {
 //                Destination Host ICMP
-                System.err.println("Send destination host icmp");
                 packetIface.sendIcmpMessage((byte) 3, (byte) 1, false);
             }
         }
