@@ -296,7 +296,7 @@ public class Router extends Device {
         } else {
             RouteEntry routeEntry = routeTable.lookup(ipPacket.getSourceAddress());
             int nextHop = 0;
-            if (routeEntry.getGatewayAddress() == 0)
+            if (routeEntry.getGatewayAddress() != 0)
                 nextHop = routeEntry.getGatewayAddress();
             else nextHop = ipPacket.getSourceAddress();
             arpEntry = arpCache.get().lookup(nextHop);
