@@ -265,7 +265,7 @@ public class Router extends Device {
             System.err.println("null arp entry.");
             Thread thread = null;
             if (!mapQueues.get().containsKey(nextHop)) {
-                mapQueues.get().put(nextHop, new LinkedBlockingQueue<>());
+                mapQueues.get().put(nextHop, new LinkedBlockingQueue<PacketIface>());
                 WaitArpReply waitArpReply = new WaitArpReply(etherPacket, outIface, nextHop, mapQueues);
                 thread = new Thread(waitArpReply);
             }
