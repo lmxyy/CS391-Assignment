@@ -83,6 +83,7 @@ public class Router extends Device {
             if (queue == null) return;
             for (PacketIface packetIface : queue) {
 //                Destination Host ICMP
+                System.err.println("Send destination host icmp");
                 packetIface.sendIcmpMessage((byte) 3, (byte) 1, false);
             }
         }
