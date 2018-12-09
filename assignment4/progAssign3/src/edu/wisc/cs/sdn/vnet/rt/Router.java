@@ -222,16 +222,15 @@ public class Router extends Device {
             return;
         }
         System.out.println("Forward IP packet");
-        System.err.println("heiheihei.");
+        System.out.println("Get IP header.");
 
         // Get IP header
         IPv4 ipPacket = (IPv4) etherPacket.getPayload();
         int dstAddr = ipPacket.getDestinationAddress();
 
         // Find matching route table entry
-        System.err.println("heiheihei.");
+        System.out.println("Find matching route table entry.");
         RouteEntry bestMatch = this.routeTable.lookup(dstAddr);
-        System.err.println("heiheihei.");
 
         // If no entry matched, do nothing
         if (null == bestMatch) {
@@ -240,7 +239,6 @@ public class Router extends Device {
             this.sendPacket(icmpMessage, inIface);
             return;
         }
-        System.err.println("heiheihei.");
 
         // Make sure we don't sent a packet back out the interface it came in
         Iface outIface = bestMatch.getInterface();
