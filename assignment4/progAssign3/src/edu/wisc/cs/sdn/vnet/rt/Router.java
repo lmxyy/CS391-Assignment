@@ -200,8 +200,10 @@ public class Router extends Device {
         // Reset checksum now that TTL is decremented
         ipPacket.resetChecksum();
 
-        if (ipPacket.getDestinationAddress() == multicastIP)
+        if (ipPacket.getDestinationAddress() == multicastIP) {
+            System.err.println("multicastIP");
             handleRipPacket(etherPacket, inIface);
+        }
 
         // Check if packet is destined for one of router's interfaces
         for (Iface iface : this.interfaces.values()) {
@@ -425,7 +427,6 @@ public class Router extends Device {
         RIPv2 riPv2 = new RIPv2();
 
         ethernet.setEtherType(Ethernet.TYPE_IPv4);
-        System.err.println(iface.getIpAddress());
         ethernet.setSourceMACAddress(iface.getMacAddress().toBytes());
         if (broadcast) ethernet.setDestinationMACAddress("FF:FF:FF:FF:FF:FF");
         else ethernet.setDestinationMACAddress(etherPacket.getSourceMACAddress());
