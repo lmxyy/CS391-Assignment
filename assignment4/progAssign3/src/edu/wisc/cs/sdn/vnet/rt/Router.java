@@ -207,7 +207,7 @@ public class Router extends Device {
         // Check if packet is destined for one of router's interfaces
         for (Iface iface : this.interfaces.values()) {
             System.err.println("aaaaaaaaaaa"+(ipPacket.getProtocol() == IPv4.PROTOCOL_ICMP));
-            System.err.println("bbbbbbbbbbb"+(((ICMP) ipPacket.getPayload()).getIcmpType() == 8));
+//            System.err.println("bbbbbbbbbbb"+(((ICMP) ipPacket.getPayload()).getIcmpType() == 8));
             System.err.println("ccccccccccc"+iface.getIpAddress()+" "+ipPacket.getDestinationAddress());
             if (ipPacket.getDestinationAddress() == iface.getIpAddress()) {
 //                Destination port unreachable ICMP
