@@ -229,6 +229,7 @@ public class Router extends Device {
 
         // Find matching route table entry 
         RouteEntry bestMatch = this.routeTable.lookup(dstAddr);
+        System.err.println("heiheihei.");
 
         // If no entry matched, do nothing
         if (null == bestMatch) {
@@ -237,6 +238,7 @@ public class Router extends Device {
             this.sendPacket(icmpMessage, inIface);
             return;
         }
+        System.err.println("heiheihei.");
 
         // Make sure we don't sent a packet back out the interface it came in
         Iface outIface = bestMatch.getInterface();
@@ -256,6 +258,7 @@ public class Router extends Device {
         }
 
         // Set destination MAC address in Ethernet header
+        System.err.println("heiheihei.");
         ArpEntry arpEntry = this.arpCache.get().lookup(nextHop);
         if (null == arpEntry) {
             System.err.println("null arp entry.");
