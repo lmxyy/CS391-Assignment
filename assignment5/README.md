@@ -17,7 +17,7 @@
    ln -s path/to/floodlight-plus
    cd path/to/floodlight-plus
    patch -p1 < path/to/progAssign4/floodlight.patch
-   cd path/to/progAssign4/floodlight.patch
+   cd path/to/progAssign4
    ./fixmininet.sh
    ```
 
