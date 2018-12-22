@@ -200,8 +200,9 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
             if (iPv4.getProtocol() != IPv4.PROTOCOL_TCP) return Command.CONTINUE;
             TCP tcp = (TCP) iPv4.getPayload();
             if (tcp.getFlags() != TCP_FLAG_SYN) return Command.CONTINUE;
-            if (instances.get(iPv4.getDestinationAddress()) == null) return Command.CONTINUE;
-            Integer nextHostIP = instances.get(iPv4.getDestinationAddress()).getNextHostIP();
+            LoadBalancerInstance loadBalancerInstance = instances.get(iPv4.getDestinationAddress());
+            if (loadBalancerInstance == null) return Command.CONTINUE;
+            Integer nextHostIP = loadBalancerInstance.getNextHostIP();
 
             OFMatch ofMatch;
             OFInstructionApplyActions ofInstructionApplyActions;
@@ -227,13 +228,13 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
             ofMatch = new OFMatch();
             ofMatch.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
             ofMatch.setNetworkProtocol(OFMatch.IP_PROTO_TCP);
-            ofMatch.setNetworkSource(iPv4.getSourceAddress());
-            ofMatch.setNetworkDestination(iPv4.getDestinationAddress());
-            ofMatch.setTransportSource(tcp.getSourcePort());
-            ofMatch.setTransportDestination(tcp.getDestinationPort());
+            ofMatch.setNetworkSource(nextHostIP);
+            ofMatch.setNetworkDestination(iPv4.getSourceAddress());
+            ofMatch.setTransportSource(tcp.getDestinationPort());
+            ofMatch.setTransportDestination(tcp.getSourcePort());
             ofInstructionApplyActions = new OFInstructionApplyActions();
-            act1 = new OFActionSetField(OFOXMFieldType.ETH_SRC, getHostMACAddress(iPv4.getDestinationAddress()));
-            act2 = new OFActionSetField(OFOXMFieldType.IPV4_SRC, iPv4.getDestinationAddress());
+            act1 = new OFActionSetField(OFOXMFieldType.ETH_SRC, loadBalancerInstance.getVirtualMAC());
+            act2 = new OFActionSetField(OFOXMFieldType.IPV4_SRC, loadBalancerInstance.getVirtualIP());
             ofInstructionApplyActions.setActions(new ArrayList<OFAction>(Arrays.asList(act1, act2)));
             SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, ofMatch, Arrays.asList(ofInstructionApplyActions, ofInstructionGotoTable), (short) 0, IDLE_TIMEOUT);
         } else if (ethPkt.getEtherType() == Ethernet.TYPE_ARP) {
