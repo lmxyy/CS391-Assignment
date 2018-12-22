@@ -203,6 +203,9 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
                 assert dst.getIPv4Address() != null;
                 assert dst != null;
                 assert ofMatch != null;
+                System.err.println(dst.getIPv4Address());
+                OFMatch ofMatch1 = new OFMatch();
+                ofMatch1.setNetworkDestination(0);
                 ofMatch.setNetworkDestination(dst.getIPv4Address());
                 SwitchCommands.removeRules(iofSwitch, table, ofMatch);
             }
