@@ -215,7 +215,6 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
         /*********************************************************************/
         /* TODO: Initialize variables or perform startup tasks, if necessary */
-        bellmanFord();
         /*********************************************************************/
     }
 
@@ -371,15 +370,15 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
         /*********************************************************************/
         /* TODO: Update routing: change routing rules for all hosts          */
-        Collection<Link> links = getLinks();
-        Map<Long,IOFSwitch> iofSwitches = getSwitches();
-        for (Link link : links) {
-            IOFSwitch u = iofSwitches.get(link.getSrc()), v = iofSwitches.get(link.getDst());
-            Integer outPort = link.getSrcPort(), inPort = link.getDstPort();
-                System.err.println("u: " + u.getStringId() + "\tport: " + outPort);
-                System.err.println("v: " + v.getStringId() + "\tport: " + inPort);
-        }
-        bellmanFord();
+//        Collection<Link> links = getLinks();
+//        Map<Long,IOFSwitch> iofSwitches = getSwitches();
+//        for (Link link : links) {
+//            IOFSwitch u = iofSwitches.get(link.getSrc()), v = iofSwitches.get(link.getDst());
+//            Integer outPort = link.getSrcPort(), inPort = link.getDstPort();
+//                System.err.println("u: " + u.getStringId() + "\tport: " + outPort);
+//                System.err.println("v: " + v.getStringId() + "\tport: " + inPort);
+//        }
+//        bellmanFord();
         /*********************************************************************/
     }
 
