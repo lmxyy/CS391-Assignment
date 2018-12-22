@@ -72,7 +72,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
     private class Graph {
         public Map<IOFSwitch, ArrayList<Entry>> toit = new HashMap<IOFSwitch, ArrayList<Entry>>();
-        public Collection<Host> hosts = new ArrayList<>();
+        public Collection<Host> hosts = new ArrayList<Host>();
         public Map<Long, IOFSwitch> iofSwitches = new HashMap<Long, IOFSwitch>();
 
         public void init(Collection<Host> hosts, Map<Long, IOFSwitch> iofSwitches, Collection<Link> links) {
