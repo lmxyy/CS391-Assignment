@@ -201,6 +201,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
                 SwitchCommands.removeRules(iofSwitch, table, ofMatch);
             }
         }
+        pathTable.clear();
     }
     /**
      * Subscribes to events and performs other startup tasks.
@@ -353,6 +354,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
      */
     @Override
     public void linkDiscoveryUpdate(List<LDUpdate> updateList) {
+        init(getHosts());
         for (LDUpdate update : updateList) {
             // If we only know the switch & port for one end of the link, then
             // the link must be from a switch to a host
