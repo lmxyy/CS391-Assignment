@@ -153,7 +153,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
     private void bfs(Host source) {
         if (!source.isAttachedToSwitch()) return;
         Map<IOFSwitch, Path> path = new HashMap<IOFSwitch, Path>();
-        Queue<IOFSwitch> queue = new LinkedBlockingQueue<>();
+        Queue<IOFSwitch> queue = new LinkedBlockingQueue<IOFSwitch>();
         queue.add(source.getSwitch());
         path.put(source.getSwitch(), new Path(source.getSwitch(), source.getPort()));
         while (!queue.isEmpty()) {
