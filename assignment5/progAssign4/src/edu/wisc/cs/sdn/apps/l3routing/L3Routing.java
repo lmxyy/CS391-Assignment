@@ -85,8 +85,6 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
             for (Link link : links) {
                 IOFSwitch u = iofSwitches.get(link.getSrc()), v = iofSwitches.get(link.getDst());
                 Integer outPort = link.getSrcPort(), inPort = link.getDstPort();
-//                System.err.println("u: " + u.getStringId() + "\tport: " + outPort);
-//                System.err.println("v: " + v.getStringId() + "\tport: " + inPort);
                 toit.get(u).add(new Entry(outPort, inPort, v));
             }
         }
@@ -163,7 +161,6 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
             }
         }
         pathTable.put(source, path);
-
     }
 
     private void bellmanFord() {
@@ -185,6 +182,9 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
                 assert dst.getIPv4Address() != null;
                 assert dst != null;
                 assert ofMatch != null;
+                System.err.println(dst.getIPv4Address());
+                OFMatch ofMatch1 = new OFMatch();
+                ofMatch1.setNetworkDestination(0);
                 ofMatch.setNetworkDestination(dst.getIPv4Address());
                 OFActionOutput ofActionOutput = new OFActionOutput(path.end().getValue());
                 OFInstructionApplyActions ofInstructionApplyActions = new OFInstructionApplyActions(new ArrayList<OFAction>(Collections.singletonList(ofActionOutput)));
@@ -344,7 +344,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
         /*********************************************************************/
         /* TODO: Update routing: change routing rules for all hosts          */
-//        bellmanFord();
+        bellmanFord();
         /*********************************************************************/
     }
 
