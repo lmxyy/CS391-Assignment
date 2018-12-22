@@ -92,7 +92,8 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
     Graph graph = new Graph();
 
-    private class Path implements java.lang.Iterable<Pair<IOFSwitch, Integer>> {
+    private class Path {
+
         private ArrayList<Pair<IOFSwitch, Integer>> path = new ArrayList<Pair<IOFSwitch, Integer>>();
 
         public Path() {
@@ -113,22 +114,6 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
         public Pair<IOFSwitch, Integer> end() {
             if (size() == 0) return null;
             else return path.get(size() - 1);
-        }
-
-        public Iterator<Pair<IOFSwitch, Integer>> iterator() {
-            return new Iterator<Pair<IOFSwitch, Integer>>() {
-
-                private int cur = -1;
-
-                public boolean hasNext() {
-                    return cur + 1 < path.size();
-                }
-
-                public Pair<IOFSwitch, Integer> next() {
-                    cur++;
-                    return path.get(cur);
-                }
-            };
         }
     }
 
@@ -197,14 +182,9 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
                 ofMatch.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
                 ofMatch.setNetworkDestination(dst.getIPv4Address());
                 OFActionOutput ofActionOutput = new OFActionOutput(path.end().getValue());
-                OFInstructionApplyActions ofInstructionApplyActions = new OFInstructionApplyActions(
-                        new ArrayList<OFAction>() {{
-                            add(ofActionOutput);
-                        }}
-                );
-                SwitchCommands.installRule(iofSwitch, table, SwitchCommands.DEFAULT_PRIORITY, ofMatch, new ArrayList<OFInstruction>() {{
-                    add(ofInstructionApplyActions);
-                }});
+
+                OFInstructionApplyActions ofInstructionApplyActions = new OFInstructionApplyActions(Collections.singletonList(ofActionOutput));
+                SwitchCommands.installRule(iofSwitch, table, SwitchCommands.DEFAULT_PRIORITY, ofMatch, new ArrayList<OFInstruction>(Collections.singletonList(ofInstructionApplyActions)));
             }
         }
     }
