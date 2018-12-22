@@ -155,7 +155,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
         while (!queue.isEmpty()) {
             IOFSwitch now = queue.poll();
             if (source.getName().equals("h1")) {
-                System.err.println(now.getId());
+                System.err.println("h1 arrives at " + now.getId());
             }
             for (Entry entry : graph.toit.get(now)) {
                 IOFSwitch iofSwitch = entry.iofSwitch;
@@ -210,6 +210,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
         }
 //        pathTable.clear();
     }
+
     /**
      * Subscribes to events and performs other startup tasks.
      */
