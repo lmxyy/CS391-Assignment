@@ -220,7 +220,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
             act1 = new OFActionSetField(OFOXMFieldType.ETH_DST, getHostMACAddress(nextHostIP));
             act2 = new OFActionSetField(OFOXMFieldType.IPV4_DST, nextHostIP);
             ofInstructionApplyActions.setActions(new ArrayList<OFAction>(Arrays.asList(act1, act2)));
-            SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, ofMatch, Arrays.asList(ofInstructionApplyActions, ofInstructionGotoTable), (short) 20, (short) 20);
+            SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, ofMatch, Arrays.asList(ofInstructionApplyActions, ofInstructionGotoTable), (short) 0, IDLE_TIMEOUT);
 
 
             // sent to the client
@@ -235,7 +235,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
             act1 = new OFActionSetField(OFOXMFieldType.ETH_SRC, getHostMACAddress(iPv4.getDestinationAddress()));
             act2 = new OFActionSetField(OFOXMFieldType.IPV4_SRC, iPv4.getDestinationAddress());
             ofInstructionApplyActions.setActions(new ArrayList<OFAction>(Arrays.asList(act1, act2)));
-            SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, ofMatch, Arrays.asList(ofInstructionApplyActions, ofInstructionGotoTable), (short) 20, (short) 20);
+            SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, ofMatch, Arrays.asList(ofInstructionApplyActions, ofInstructionGotoTable), (short) 0, IDLE_TIMEOUT);
         } else if (ethPkt.getEtherType() == Ethernet.TYPE_ARP) {
             ARP arp = (ARP) ethPkt.getPayload();
             if (arp.getOpCode() != ARP.OP_REQUEST) return Command.CONTINUE;
@@ -247,6 +247,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
             Ethernet ethernet = new Ethernet();
             ARP arpReply = new ARP();
 
+            ethernet.setEtherType(Ethernet.TYPE_ARP);
             ethernet.setSourceMACAddress(loadBalancerInstance.getVirtualMAC());
             ethernet.setDestinationMACAddress(ethPkt.getSourceMACAddress());
             ethernet.setPayload(arpReply);
