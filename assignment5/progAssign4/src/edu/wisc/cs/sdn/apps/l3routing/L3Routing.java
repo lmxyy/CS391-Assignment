@@ -308,7 +308,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
         /*********************************************************************/
         /* TODO: Update routing: change rules to route to host               */
-//        bellmanFord();
+        bellmanFord();
         /*********************************************************************/
     }
 
@@ -324,7 +324,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
         /*********************************************************************/
         /* TODO: Update routing: change routing rules for all hosts          */
-//        bellmanFord();
+        bellmanFord();
         /*********************************************************************/
     }
 
@@ -340,7 +340,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
         /*********************************************************************/
         /* TODO: Update routing: change routing rules for all hosts          */
-//        bellmanFord();
+        bellmanFord();
         /*********************************************************************/
     }
 
