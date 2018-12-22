@@ -219,7 +219,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
             ofInstructionApplyActions = new OFInstructionApplyActions();
             act1 = new OFActionSetField(OFOXMFieldType.ETH_DST, getHostMACAddress(nextHostIP));
             act2 = new OFActionSetField(OFOXMFieldType.IPV4_DST, nextHostIP);
-            ofInstructionApplyActions.setActions(Arrays.asList(act1, act2));
+            ofInstructionApplyActions.setActions(new ArrayList<OFAction>(Arrays.asList(act1, act2)));
             SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, ofMatch, Arrays.asList(ofInstructionApplyActions, ofInstructionGotoTable), (short) 20, (short) 20);
 
 
@@ -234,7 +234,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
             ofInstructionApplyActions = new OFInstructionApplyActions();
             act1 = new OFActionSetField(OFOXMFieldType.ETH_SRC, getHostMACAddress(iPv4.getDestinationAddress()));
             act2 = new OFActionSetField(OFOXMFieldType.IPV4_SRC, iPv4.getDestinationAddress());
-            ofInstructionApplyActions.setActions(Arrays.asList(act1, act2));
+            ofInstructionApplyActions.setActions(new ArrayList<OFAction>(Arrays.asList(act1, act2)));
             SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, ofMatch, Arrays.asList(ofInstructionApplyActions, ofInstructionGotoTable), (short) 20, (short) 20);
         } else if (ethPkt.getEtherType() == Ethernet.TYPE_ARP) {
             ARP arp = (ARP) ethPkt.getPayload();
