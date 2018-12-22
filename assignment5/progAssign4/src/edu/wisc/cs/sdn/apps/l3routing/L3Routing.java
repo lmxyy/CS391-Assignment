@@ -1,12 +1,19 @@
 package edu.wisc.cs.sdn.apps.l3routing;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
+import com.kenai.jffi.Array;
+import edu.wisc.cs.sdn.apps.util.SwitchCommands;
+import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionOutput;
+import org.openflow.protocol.instruction.OFInstruction;
+import org.openflow.protocol.instruction.OFInstructionActions;
+import org.openflow.protocol.instruction.OFInstructionApplyActions;
+import org.python.antlr.op.In;
+import org.sdnplatform.sync.internal.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +57,81 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
     // Map of hosts to devices
     private Map<IDevice, Host> knownHosts;
 
+    private Map<Host, Map<IOFSwitch, Path>> pathTable = new HashMap<Host, Map<IOFSwitch, Path>>();
+
+    private class Entry {
+        public Integer outPort, inPort;
+        IOFSwitch iofSwitch;
+
+        public Entry(Integer outPort, Integer inPort, IOFSwitch iofSwitch) {
+            this.outPort = outPort;
+            this.inPort = inPort;
+            this.iofSwitch = iofSwitch;
+        }
+    }
+
+    private class Graph {
+        public Map<IOFSwitch, ArrayList<Entry>> toit = new HashMap<IOFSwitch, ArrayList<Entry>>();
+        public ArrayList<Host> hosts = new ArrayList<Host>();
+        public Map<Long, IOFSwitch> iofSwitches = new HashMap<Long, IOFSwitch>();
+
+        public void init(ArrayList<Host> hosts, Map<Long, IOFSwitch> iofSwitches, ArrayList<Link> links) {
+            toit.clear();
+            this.hosts = hosts;
+            this.iofSwitches = iofSwitches;
+            for (IOFSwitch iofSwitch : iofSwitches.values()) {
+                toit.put(iofSwitch, new ArrayList<Entry>());
+            }
+            for (Link link : links) {
+                IOFSwitch u = iofSwitches.get(link.getSrc()), v = iofSwitches.get(link.getDst());
+                Integer outPort = link.getSrcPort(), inPort = link.getDstPort();
+                toit.get(u).add(new Entry(outPort, inPort, v));
+            }
+        }
+    }
+
+    Graph graph = new Graph();
+
+    private class Path implements java.lang.Iterable<Pair<IOFSwitch, Integer>> {
+        private ArrayList<Pair<IOFSwitch, Integer>> path = new ArrayList<Pair<IOFSwitch, Integer>>();
+
+        public Path() {
+        }
+
+        public Path(IOFSwitch iofSwitch, Integer port) {
+            path.add(new Pair<IOFSwitch, Integer>(iofSwitch, port));
+        }
+
+        public void add(IOFSwitch iofSwitch, Integer port) {
+            path.add(new Pair<IOFSwitch, Integer>(iofSwitch, port));
+        }
+
+        public int size() {
+            return path.size();
+        }
+
+        public Pair<IOFSwitch, Integer> end() {
+            if (size() == 0) return null;
+            else return path.get(size() - 1);
+        }
+
+        public Iterator<Pair<IOFSwitch, Integer>> iterator() {
+            return new Iterator<Pair<IOFSwitch, Integer>>() {
+
+                private int cur = -1;
+
+                public boolean hasNext() {
+                    return cur + 1 < path.size();
+                }
+
+                public Pair<IOFSwitch, Integer> next() {
+                    cur++;
+                    return path.get(cur);
+                }
+            };
+        }
+    }
+
     /**
      * Loads dependencies and initializes data structures.
      */
@@ -68,6 +150,65 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
         this.knownHosts = new ConcurrentHashMap<IDevice, Host>();
     }
 
+    private void bfs(Host source) {
+        if (!source.isAttachedToSwitch()) return;
+        Map<IOFSwitch, Path> path = new HashMap<IOFSwitch, Path>();
+        Queue<IOFSwitch> queue = new LinkedBlockingQueue<>();
+        queue.add(source.getSwitch());
+        path.put(source.getSwitch(), new Path(source.getSwitch(), source.getPort()));
+        while (!queue.isEmpty()) {
+            IOFSwitch now = queue.poll();
+            for (Entry entry : graph.toit.get(now)) {
+                IOFSwitch iofSwitch = entry.iofSwitch;
+                if (!path.containsKey(iofSwitch)) {
+                    path.put(iofSwitch, path.get(now));
+                    path.get(iofSwitch).add(iofSwitch, entry.inPort);
+                }
+            }
+        }
+        pathTable.put(source, path);
+
+    }
+
+    private void bellmanFord() {
+        ArrayList<Host> hosts = (ArrayList<Host>) getHosts();
+        Map<Long, IOFSwitch> switches = getSwitches();
+        ArrayList<Link> links = (ArrayList<Link>) getLinks();
+        for (Host dst : hosts) {
+            if (pathTable.get(dst) == null) continue;
+            for (Map.Entry<IOFSwitch, Path> entry : pathTable.get(dst).entrySet()) {
+                IOFSwitch iofSwitch = entry.getKey();
+                OFMatch ofMatch = new OFMatch();
+                ofMatch.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
+                ofMatch.setNetworkDestination(dst.getIPv4Address());
+                SwitchCommands.removeRules(iofSwitch, table, ofMatch);
+            }
+        }
+        graph.init(hosts, switches, links);
+        for (Host host : hosts) {
+            bfs(host);
+        }
+        for (Host dst : hosts) {
+            if (pathTable.get(dst) == null) continue;
+            for (Map.Entry<IOFSwitch, Path> entry : pathTable.get(dst).entrySet()) {
+                IOFSwitch iofSwitch = entry.getKey();
+                Path path = entry.getValue();
+                OFMatch ofMatch = new OFMatch();
+                ofMatch.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
+                ofMatch.setNetworkDestination(dst.getIPv4Address());
+                OFActionOutput ofActionOutput = new OFActionOutput(path.end().getValue());
+                OFInstructionApplyActions ofInstructionApplyActions = new OFInstructionApplyActions(
+                        new ArrayList<OFAction>() {{
+                            add(ofActionOutput);
+                        }}
+                );
+                SwitchCommands.installRule(iofSwitch, table, SwitchCommands.DEFAULT_PRIORITY, ofMatch, new ArrayList<OFInstruction>() {{
+                    add(ofInstructionApplyActions);
+                }});
+            }
+        }
+    }
+
     /**
      * Subscribes to events and performs other startup tasks.
      */
@@ -81,7 +222,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
         /*********************************************************************/
         /* TODO: Initialize variables or perform startup tasks, if necessary */
-
+        bellmanFord();
         /*********************************************************************/
     }
 
@@ -122,7 +263,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
             /*****************************************************************/
             /* TODO: Update routing: add rules to route to new host          */
-
+            bellmanFord();
             /*****************************************************************/
         }
     }
@@ -145,7 +286,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
         /*********************************************************************/
         /* TODO: Update routing: remove rules to route to host               */
-
+        bellmanFord();
         /*********************************************************************/
     }
 
@@ -171,14 +312,14 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
         /*********************************************************************/
         /* TODO: Update routing: change rules to route to host               */
-
+        bellmanFord();
         /*********************************************************************/
     }
 
     /**
      * Event handler called when a switch joins the network.
      *
-     * @param DPID for the switch
+     * @param switchId for the switch
      */
     @Override
     public void switchAdded(long switchId) {
@@ -187,14 +328,14 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
         /*********************************************************************/
         /* TODO: Update routing: change routing rules for all hosts          */
-
+        bellmanFord();
         /*********************************************************************/
     }
 
     /**
      * Event handler called when a switch leaves the network.
      *
-     * @param DPID for the switch
+     * @param switchId for the switch
      */
     @Override
     public void switchRemoved(long switchId) {
@@ -203,7 +344,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
         /*********************************************************************/
         /* TODO: Update routing: change routing rules for all hosts          */
-
+        bellmanFord();
         /*********************************************************************/
     }
 
@@ -231,7 +372,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
         /*********************************************************************/
         /* TODO: Update routing: change routing rules for all hosts          */
-
+        bellmanFord();
         /*********************************************************************/
     }
 
@@ -266,7 +407,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
     /**
      * Event handler called when the controller becomes the master for a switch.
      *
-     * @param DPID for the switch
+     * @param switchId for the switch
      */
     @Override
     public void switchActivated(long switchId) { /* Nothing we need to do, since we're not switching controller roles */ }
@@ -274,7 +415,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
     /**
      * Event handler called when some attribute of a switch changes.
      *
-     * @param DPID for the switch
+     * @param switchId for the switch
      */
     @Override
     public void switchChanged(long switchId) { /* Nothing we need to do */ }
@@ -283,9 +424,9 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
      * Event handler called when a port on a switch goes up or down, or is
      * added or removed.
      *
-     * @param DPID for the switch
-     * @param port the port on the switch whose status changed
-     * @param type the type of status change (up, down, add, remove)
+     * @param switchId for the switch
+     * @param port     the port on the switch whose status changed
+     * @param type     the type of status change (up, down, add, remove)
      */
     @Override
     public void switchPortChanged(long switchId, ImmutablePort port,

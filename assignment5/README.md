@@ -20,5 +20,3 @@
    cd path/to/progAssign4
    ./fixmininet.sh
    ```
-
-
