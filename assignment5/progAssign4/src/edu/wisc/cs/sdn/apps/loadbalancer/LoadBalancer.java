@@ -1,15 +1,22 @@
 package edu.wisc.cs.sdn.apps.loadbalancer;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
-import org.openflow.protocol.OFMessage;
-import org.openflow.protocol.OFPacketIn;
-import org.openflow.protocol.OFType;
+import com.kenai.jffi.Array;
+import edu.wisc.cs.sdn.apps.l3routing.L3Routing;
+import edu.wisc.cs.sdn.apps.util.SwitchCommands;
+import net.floodlightcontroller.packet.ARP;
+import net.floodlightcontroller.packet.IPv4;
+import net.floodlightcontroller.packet.TCP;
+import org.openflow.protocol.*;
 
+import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionOutput;
+import org.openflow.protocol.action.OFActionSetField;
+import org.openflow.protocol.instruction.OFInstruction;
+import org.openflow.protocol.instruction.OFInstructionApplyActions;
+import org.openflow.protocol.instruction.OFInstructionGotoTable;
+import org.python.antlr.op.In;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,14 +111,13 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 
         /*********************************************************************/
         /* TODO: Perform other tasks, if necessary                           */
-
         /*********************************************************************/
     }
 
     /**
      * Event handler called when a switch joins the network.
      *
-     * @param DPID for the switch
+     * @param switchId for the switch
      */
     @Override
     public void switchAdded(long switchId) {
@@ -124,8 +130,40 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
         /*       balancer IP to the controller                               */
         /*       (2) ARP packets to the controller, and                      */
         /*       (3) all other packets to the next rule table in the switch  */
-
         /*********************************************************************/
+
+        /*       (1) packets from new connections to each virtual load       */
+        /*       balancer IP to the controller                               */
+        for (Integer virtualIp : instances.keySet()) {
+            OFMatch ofMatch = new OFMatch();
+            ofMatch.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
+            ofMatch.setNetworkDestination(virtualIp);
+            ofMatch.setNetworkProtocol(OFMatch.IP_PROTO_TCP);
+            OFInstructionApplyActions ofInstructionApplyActions = new OFInstructionApplyActions();
+            OFActionOutput ofActionOutput = new OFActionOutput();
+            ofActionOutput.setPort(OFPort.OFPP_CONTROLLER);
+            ofInstructionApplyActions.setActions(new ArrayList<OFAction>(Collections.singleton(ofActionOutput)));
+            SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, ofMatch,
+                    new ArrayList<OFInstruction>(Collections.singleton(ofInstructionApplyActions)));
+        }
+
+        /*       (2) ARP packets to the controller, and                      */
+        OFMatch ofMatch = new OFMatch();
+        ofMatch.setDataLayerType(OFMatch.ETH_TYPE_ARP);
+        OFInstructionApplyActions ofInstructionApplyActions = new OFInstructionApplyActions();
+        OFActionOutput ofActionOutput = new OFActionOutput();
+        ofActionOutput.setPort(OFPort.OFPP_CONTROLLER);
+        ofInstructionApplyActions.setActions(new ArrayList<OFAction>(Collections.singleton(ofActionOutput)));
+        SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, ofMatch,
+                new ArrayList<OFInstruction>(Collections.singleton(ofInstructionApplyActions)));
+
+
+        /*       (3) all other packets to the next rule table in the switch  */
+        ofMatch = new OFMatch();
+        ofMatch.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
+        OFInstructionGotoTable ofInstructionGotoTable = new OFInstructionGotoTable(L3Routing.table);
+        SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, ofMatch,
+                new ArrayList<OFInstruction>(Collections.singletonList(ofInstructionGotoTable)));
     }
 
     /**
@@ -155,9 +193,76 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
         /*       SYNs sent to a virtual IP, select a host and install        */
         /*       connection-specific rules to rewrite IP and MAC addresses;  */
         /*       ignore all other packets                                    */
-
         /*********************************************************************/
 
+        if (ethPkt.getEtherType() == Ethernet.TYPE_IPv4) {
+            IPv4 iPv4 = (IPv4) ethPkt.getPayload();
+            if (iPv4.getProtocol() != IPv4.PROTOCOL_TCP) return Command.CONTINUE;
+            TCP tcp = (TCP) iPv4.getPayload();
+            if (tcp.getFlags() != TCP_FLAG_SYN) return Command.CONTINUE;
+            if (instances.get(iPv4.getDestinationAddress()) == null) return Command.CONTINUE;
+            Integer nextHostIP = instances.get(iPv4.getDestinationAddress()).getNextHostIP();
+
+            OFMatch ofMatch;
+            OFInstructionApplyActions ofInstructionApplyActions;
+            OFInstructionGotoTable ofInstructionGotoTable = new OFInstructionGotoTable(L3Routing.table);
+            OFActionSetField act1, act2;
+
+            // sent to virtual ip
+            ofMatch = new OFMatch();
+            ofMatch.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
+            ofMatch.setNetworkProtocol(OFMatch.IP_PROTO_TCP);
+            ofMatch.setNetworkSource(iPv4.getSourceAddress());
+            ofMatch.setNetworkDestination(iPv4.getDestinationAddress());
+            ofMatch.setTransportSource(tcp.getSourcePort());
+            ofMatch.setTransportDestination(tcp.getDestinationPort());
+            ofInstructionApplyActions = new OFInstructionApplyActions();
+            act1 = new OFActionSetField(OFOXMFieldType.ETH_DST, getHostMACAddress(nextHostIP));
+            act2 = new OFActionSetField(OFOXMFieldType.IPV4_DST, nextHostIP);
+            ofInstructionApplyActions.setActions(Arrays.asList(act1, act2));
+            SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, ofMatch, Arrays.asList(ofInstructionApplyActions, ofInstructionGotoTable), (short) 20, (short) 20);
+
+
+            // sent to the client
+            ofMatch = new OFMatch();
+            ofMatch.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
+            ofMatch.setNetworkProtocol(OFMatch.IP_PROTO_TCP);
+            ofMatch.setNetworkSource(iPv4.getSourceAddress());
+            ofMatch.setNetworkDestination(iPv4.getDestinationAddress());
+            ofMatch.setTransportSource(tcp.getSourcePort());
+            ofMatch.setTransportDestination(tcp.getDestinationPort());
+            ofInstructionApplyActions = new OFInstructionApplyActions();
+            act1 = new OFActionSetField(OFOXMFieldType.ETH_SRC, getHostMACAddress(iPv4.getDestinationAddress()));
+            act2 = new OFActionSetField(OFOXMFieldType.IPV4_SRC, iPv4.getDestinationAddress());
+            ofInstructionApplyActions.setActions(Arrays.asList(act1, act2));
+            SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, ofMatch, Arrays.asList(ofInstructionApplyActions, ofInstructionGotoTable), (short) 20, (short) 20);
+        } else if (ethPkt.getEtherType() == Ethernet.TYPE_ARP) {
+            ARP arp = (ARP) ethPkt.getPayload();
+            if (arp.getOpCode() != ARP.OP_REQUEST) return Command.CONTINUE;
+            if (arp.getProtocolType() != ARP.PROTO_TYPE_IP) return Command.CONTINUE;
+
+            int virtualIp = IPv4.toIPv4Address(arp.getTargetProtocolAddress());
+            LoadBalancerInstance loadBalancerInstance = instances.get(virtualIp);
+
+            Ethernet ethernet = new Ethernet();
+            ARP arpReply = new ARP();
+
+            ethernet.setSourceMACAddress(loadBalancerInstance.getVirtualMAC());
+            ethernet.setDestinationMACAddress(ethPkt.getSourceMACAddress());
+            ethernet.setPayload(arpReply);
+
+            arpReply.setHardwareType(ARP.HW_TYPE_ETHERNET);
+            arpReply.setProtocolType(ARP.PROTO_TYPE_IP);
+            arpReply.setOpCode(ARP.OP_REPLY);
+            arpReply.setHardwareAddressLength((byte) Ethernet.DATALAYER_ADDRESS_LENGTH);
+            arpReply.setProtocolAddressLength((byte) 4);
+            arpReply.setTargetHardwareAddress(arp.getSenderHardwareAddress());
+            arpReply.setTargetProtocolAddress(arp.getSenderProtocolAddress());
+            arpReply.setSenderHardwareAddress(loadBalancerInstance.getVirtualMAC());
+            arpReply.setSenderProtocolAddress(virtualIp);
+
+            SwitchCommands.sendPacket(sw, (short) pktIn.getInPort(), ethernet);
+        }
 
         // We don't care about other packets
         return Command.CONTINUE;
@@ -182,7 +287,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
     /**
      * Event handler called when a switch leaves the network.
      *
-     * @param DPID for the switch
+     * @param switchId for the switch
      */
     @Override
     public void switchRemoved(long switchId) { /* Nothing we need to do, since the switch is no longer active */ }
@@ -190,7 +295,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
     /**
      * Event handler called when the controller becomes the master for a switch.
      *
-     * @param DPID for the switch
+     * @param switchId for the switch
      */
     @Override
     public void switchActivated(long switchId) { /* Nothing we need to do, since we're not switching controller roles */ }
@@ -199,9 +304,9 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
      * Event handler called when a port on a switch goes up or down, or is
      * added or removed.
      *
-     * @param DPID for the switch
-     * @param port the port on the switch whose status changed
-     * @param type the type of status change (up, down, add, remove)
+     * @param switchId for the switch
+     * @param port     the port on the switch whose status changed
+     * @param type     the type of status change (up, down, add, remove)
      */
     @Override
     public void switchPortChanged(long switchId, ImmutablePort port,
@@ -210,7 +315,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
     /**
      * Event handler called when some attribute of a switch changes.
      *
-     * @param DPID for the switch
+     * @param switchId for the switch
      */
     @Override
     public void switchChanged(long switchId) { /* Nothing we need to do */ }

@@ -1,24 +1,7 @@
 package edu.wisc.cs.sdn.apps.l3routing;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import com.kenai.jffi.Array;
-import edu.wisc.cs.sdn.apps.util.SwitchCommands;
-import org.openflow.protocol.OFMatch;
-import org.openflow.protocol.action.OFAction;
-import org.openflow.protocol.action.OFActionOutput;
-import org.openflow.protocol.instruction.OFInstruction;
-import org.openflow.protocol.instruction.OFInstructionActions;
-import org.openflow.protocol.instruction.OFInstructionApplyActions;
-import org.python.antlr.op.In;
-import org.sdnplatform.sync.internal.util.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.wisc.cs.sdn.apps.util.Host;
-
+import edu.wisc.cs.sdn.apps.util.SwitchCommands;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.IOFSwitch.PortChangeType;
@@ -34,6 +17,18 @@ import net.floodlightcontroller.devicemanager.IDeviceService;
 import net.floodlightcontroller.linkdiscovery.ILinkDiscoveryListener;
 import net.floodlightcontroller.linkdiscovery.ILinkDiscoveryService;
 import net.floodlightcontroller.routing.Link;
+import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionOutput;
+import org.openflow.protocol.instruction.OFInstruction;
+import org.openflow.protocol.instruction.OFInstructionApplyActions;
+import org.sdnplatform.sync.internal.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class L3Routing implements IFloodlightModule, IOFSwitchListener,
         ILinkDiscoveryListener, IDeviceListener {
@@ -190,7 +185,6 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
     private void init() {
         for (Host dst : pathTable.keySet()) {
-//            System.err.println(dst.getName());
             for (Map.Entry<IOFSwitch, Path> entry : pathTable.get(dst).entrySet()) {
                 IOFSwitch iofSwitch = entry.getKey();
                 OFMatch ofMatch = new OFMatch();
