@@ -72,10 +72,10 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
     private class Graph {
         public Map<IOFSwitch, ArrayList<Entry>> toit = new HashMap<IOFSwitch, ArrayList<Entry>>();
-        public ArrayList<Host> hosts = new ArrayList<Host>();
+        public Collection<Host> hosts = new ArrayList<>();
         public Map<Long, IOFSwitch> iofSwitches = new HashMap<Long, IOFSwitch>();
 
-        public void init(ArrayList<Host> hosts, Map<Long, IOFSwitch> iofSwitches, ArrayList<Link> links) {
+        public void init(Collection<Host> hosts, Map<Long, IOFSwitch> iofSwitches, Collection<Link> links) {
             toit.clear();
             this.hosts = hosts;
             this.iofSwitches = iofSwitches;
@@ -156,9 +156,9 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
     }
 
     private void bellmanFord() {
-        ArrayList<Host> hosts = (ArrayList<Host>) getHosts();
+        Collection<Host> hosts =getHosts();
         Map<Long, IOFSwitch> switches = getSwitches();
-        ArrayList<Link> links = (ArrayList<Link>) getLinks();
+        Collection<Link> links = getLinks();
         for (Host dst : hosts) {
             if (pathTable.get(dst) == null) continue;
             for (Map.Entry<IOFSwitch, Path> entry : pathTable.get(dst).entrySet()) {
