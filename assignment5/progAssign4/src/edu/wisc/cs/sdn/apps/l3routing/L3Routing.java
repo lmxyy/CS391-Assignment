@@ -182,8 +182,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
                 ofMatch.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
                 ofMatch.setNetworkDestination(dst.getIPv4Address());
                 OFActionOutput ofActionOutput = new OFActionOutput(path.end().getValue());
-
-                OFInstructionApplyActions ofInstructionApplyActions = new OFInstructionApplyActions(Collections.singletonList(ofActionOutput));
+                OFInstructionApplyActions ofInstructionApplyActions = new OFInstructionApplyActions(new ArrayList<OFAction>(Collections.singletonList(ofActionOutput)));
                 SwitchCommands.installRule(iofSwitch, table, SwitchCommands.DEFAULT_PRIORITY, ofMatch, new ArrayList<OFInstruction>(Collections.singletonList(ofInstructionApplyActions)));
             }
         }
