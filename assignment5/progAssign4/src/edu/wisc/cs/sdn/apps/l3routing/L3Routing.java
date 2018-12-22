@@ -183,6 +183,8 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
                 OFMatch ofMatch = new OFMatch();
                 ofMatch.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
                 assert dst.getIPv4Address() != null;
+                assert dst != null;
+                assert ofMatch != null;
                 ofMatch.setNetworkDestination(dst.getIPv4Address());
                 OFActionOutput ofActionOutput = new OFActionOutput(path.end().getValue());
                 OFInstructionApplyActions ofInstructionApplyActions = new OFInstructionApplyActions(new ArrayList<OFAction>(Collections.singletonList(ofActionOutput)));
@@ -199,6 +201,8 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
                 OFMatch ofMatch = new OFMatch();
                 ofMatch.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
                 assert dst.getIPv4Address() != null;
+                assert dst != null;
+                assert ofMatch != null;
                 ofMatch.setNetworkDestination(dst.getIPv4Address());
                 SwitchCommands.removeRules(iofSwitch, table, ofMatch);
             }
