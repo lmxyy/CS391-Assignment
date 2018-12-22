@@ -85,8 +85,8 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
             for (Link link : links) {
                 IOFSwitch u = iofSwitches.get(link.getSrc()), v = iofSwitches.get(link.getDst());
                 Integer outPort = link.getSrcPort(), inPort = link.getDstPort();
-                System.err.println("u: "+u.getStringId()+"\tport: "+outPort);
-                System.err.println("v: "+v.getStringId()+"\tport: "+inPort);
+                System.err.println("u: " + u.getStringId() + "\tport: " + outPort);
+                System.err.println("v: " + v.getStringId() + "\tport: " + inPort);
                 toit.get(u).add(new Entry(outPort, inPort, v));
             }
         }
@@ -117,6 +117,15 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
             if (size() == 0) return null;
             else return path.get(size() - 1);
         }
+
+        public Path copyAndAdd(IOFSwitch iofSwitch, Integer port) {
+            Path ret = new Path();
+            for (Pair<IOFSwitch, Integer> entry : path) {
+                ret.add(entry.getKey(), entry.getValue());
+            }
+            ret.add(iofSwitch, port);
+            return ret;
+        }
     }
 
     /**
@@ -139,7 +148,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
     private void bfs(Host source) {
         if (!source.isAttachedToSwitch()) return;
-        System.err.println("link port: "+source.getPort());
+        System.err.println("link port: " + source.getPort());
         Map<IOFSwitch, Path> path = new HashMap<IOFSwitch, Path>();
         Queue<IOFSwitch> queue = new LinkedBlockingQueue<IOFSwitch>();
         queue.add(source.getSwitch());
@@ -149,8 +158,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
             for (Entry entry : graph.toit.get(now)) {
                 IOFSwitch iofSwitch = entry.iofSwitch;
                 if (!path.containsKey(iofSwitch)) {
-                    path.put(iofSwitch, path.get(now));
-                    path.get(iofSwitch).add(iofSwitch, entry.inPort);
+                    path.put(iofSwitch, path.get(now).copyAndAdd(iofSwitch, entry.inPort));
                 }
             }
         }
@@ -159,7 +167,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
     }
 
     private void bellmanFord() {
-        Collection<Host> hosts =getHosts();
+        Collection<Host> hosts = getHosts();
         Map<Long, IOFSwitch> switches = getSwitches();
         Collection<Link> links = getLinks();
         for (Host dst : hosts) {
