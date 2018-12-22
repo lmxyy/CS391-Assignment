@@ -85,8 +85,8 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
             for (Link link : links) {
                 IOFSwitch u = iofSwitches.get(link.getSrc()), v = iofSwitches.get(link.getDst());
                 Integer outPort = link.getSrcPort(), inPort = link.getDstPort();
-                System.err.println("u: " + u.getStringId() + "\tport: " + outPort);
-                System.err.println("v: " + v.getStringId() + "\tport: " + inPort);
+//                System.err.println("u: " + u.getStringId() + "\tport: " + outPort);
+//                System.err.println("v: " + v.getStringId() + "\tport: " + inPort);
                 toit.get(u).add(new Entry(outPort, inPort, v));
             }
         }
@@ -148,7 +148,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
     private void bfs(Host source) {
         if (!source.isAttachedToSwitch()) return;
-        System.err.println("link port: " + source.getPort());
+//        System.err.println("link port: " + source.getPort());
         Map<IOFSwitch, Path> path = new HashMap<IOFSwitch, Path>();
         Queue<IOFSwitch> queue = new LinkedBlockingQueue<IOFSwitch>();
         queue.add(source.getSwitch());
