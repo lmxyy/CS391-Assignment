@@ -170,17 +170,6 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
         Collection<Host> hosts = getHosts();
         Map<Long, IOFSwitch> switches = getSwitches();
         Collection<Link> links = getLinks();
-        for (Host dst : hosts) {
-            if (pathTable.get(dst) == null) continue;
-            System.err.println(dst.getName());
-            for (Map.Entry<IOFSwitch, Path> entry : pathTable.get(dst).entrySet()) {
-                IOFSwitch iofSwitch = entry.getKey();
-                OFMatch ofMatch = new OFMatch();
-                ofMatch.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
-                ofMatch.setNetworkDestination(dst.getIPv4Address());
-                SwitchCommands.removeRules(iofSwitch, table, ofMatch);
-            }
-        }
         graph.init(hosts, switches, links);
         for (Host host : hosts) {
             bfs(host);
@@ -200,6 +189,19 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
         }
     }
 
+    private void init(Collection<Host> hosts) {
+        for (Host dst : hosts) {
+            if (pathTable.get(dst) == null) continue;
+            System.err.println(dst.getName());
+            for (Map.Entry<IOFSwitch, Path> entry : pathTable.get(dst).entrySet()) {
+                IOFSwitch iofSwitch = entry.getKey();
+                OFMatch ofMatch = new OFMatch();
+                ofMatch.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
+                ofMatch.setNetworkDestination(dst.getIPv4Address());
+                SwitchCommands.removeRules(iofSwitch, table, ofMatch);
+            }
+        }
+    }
     /**
      * Subscribes to events and performs other startup tasks.
      */
@@ -246,6 +248,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
      */
     @Override
     public void deviceAdded(IDevice device) {
+        init(getHosts());
         Host host = new Host(device, this.floodlightProv);
         // We only care about a new host if we know its IP
         if (host.getIPv4Address() != null) {
@@ -266,6 +269,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
      */
     @Override
     public void deviceRemoved(IDevice device) {
+        init(getHosts());
         Host host = this.knownHosts.get(device);
         if (null == host) {
             return;
@@ -288,6 +292,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
      */
     @Override
     public void deviceMoved(IDevice device) {
+        init(getHosts());
         Host host = this.knownHosts.get(device);
         if (null == host) {
             host = new Host(device, this.floodlightProv);
@@ -314,6 +319,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
      */
     @Override
     public void switchAdded(long switchId) {
+        init(getHosts());
         IOFSwitch sw = this.floodlightProv.getSwitch(switchId);
         log.info(String.format("Switch s%d added", switchId));
 
@@ -330,6 +336,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
      */
     @Override
     public void switchRemoved(long switchId) {
+        init(getHosts());
         IOFSwitch sw = this.floodlightProv.getSwitch(switchId);
         log.info(String.format("Switch s%d removed", switchId));
 
@@ -363,6 +370,14 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
         /*********************************************************************/
         /* TODO: Update routing: change routing rules for all hosts          */
+        Collection<Link> links = getLinks();
+        Map<Long,IOFSwitch> iofSwitches = getSwitches();
+        for (Link link : links) {
+            IOFSwitch u = iofSwitches.get(link.getSrc()), v = iofSwitches.get(link.getDst());
+            Integer outPort = link.getSrcPort(), inPort = link.getDstPort();
+                System.err.println("u: " + u.getStringId() + "\tport: " + outPort);
+                System.err.println("v: " + v.getStringId() + "\tport: " + inPort);
+        }
         bellmanFord();
         /*********************************************************************/
     }
