@@ -172,6 +172,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
         Collection<Link> links = getLinks();
         for (Host dst : hosts) {
             if (pathTable.get(dst) == null) continue;
+            System.err.println(dst.getName());
             for (Map.Entry<IOFSwitch, Path> entry : pathTable.get(dst).entrySet()) {
                 IOFSwitch iofSwitch = entry.getKey();
                 OFMatch ofMatch = new OFMatch();
